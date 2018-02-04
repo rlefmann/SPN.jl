@@ -20,4 +20,15 @@ function test_inner_node_construction()
 end
 
 
+function test_indicator_node_construction()
+	i = IndicatorNode(2,3.0)
+	@test i.logval == -Inf
+	@test i.parents == InnerNode[]
+	@test length(i.scope) == 1
+	@test i.scope == [2]
+	@test i.indicates == 3.0
+end
+
+
 test_inner_node_construction()
+test_indicator_node_construction()
