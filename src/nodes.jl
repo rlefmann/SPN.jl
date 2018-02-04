@@ -32,6 +32,9 @@ abstract type LeafNode <: Node end
 # INNER NODES
 ################################################################
 
+"""
+A product node computes the product of the values of its child nodes.
+"""
 mutable struct ProdNode <: InnerNode
 	"The log-likelihood value of this node."
 	logval::Float64
