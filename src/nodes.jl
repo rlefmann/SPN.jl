@@ -28,6 +28,7 @@ Leaf nodes are nodes without children that represent some univariate probability
 abstract type LeafNode <: Node end
 
 
+
 ################################################################
 # INNER NODES
 ################################################################
@@ -94,6 +95,7 @@ function SumNode()
 end
 
 
+
 ################################################################
 # LEAF NODES
 # A leaf node represents some univariate probability
@@ -140,3 +142,37 @@ IndicatorNode(varidx::Int, indicates::Int) = IndicatorNode(varidx, float(indicat
 Creates a new indicator node for a random variable with boolean values.
 """
 IndicatorNode(varidx::Int, indicates::Bool) = IndicatorNode(varidx, float(indicates))
+
+
+
+################################################################
+# CONNECTING NODES
+# We can connect nodes by adding the child node to the list of
+# children of the parent and the parent to the list of parents
+# of the child. Note that the parent has to be an inner node.
+################################################################
+
+"""
+    connect!(parent::InnerNode, child::Node)
+
+Connects two nodes with an edge.
+"""
+function connect!(parent::InnerNode, child::Node)
+    push!(parent.children, child)
+    push!(child.parents, parent)
+end
+
+
+"""
+    connect!(parent::SumNode, child::Node; weight=rand())
+
+Connects two nodes with an edge, where the parent node is a
+sum node. Because edges emanating from a sum node have weights
+assigned to them, we can specify them with a keyword argument.
+If no weight is specified, a weight is chosen at random.
+"""
+function connect!(parent::SumNode, child::Node; weight=rand())
+    push!(parent.children, child)
+    push!(child.parents, parent)
+    push!(parent.weights, weight)
+end
