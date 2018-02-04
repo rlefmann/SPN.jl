@@ -58,3 +58,37 @@ function ProdNode()
 	scope = Int[]
 	ProdNode(logval, parents, children, scope)
 end
+
+
+"""
+A sum node computes a weighted sum of the values of its child nodes.
+"""
+mutable struct SumNode <: InnerNode
+	"The log-likelihood value of this node."
+	logval::Float64
+
+	"The parent nodes of this node."
+	parents::Vector{InnerNode}
+	"The child nodes of this node."
+	children::Vector{Node}
+	"The scope of this node (a list of variables which influence the node)."
+	scope::Vector{Int}
+
+	"The weights of the edges connecting the sum node with its child nodes."
+	weights::Vector{Float64}
+end
+
+
+"""
+Creates a new sum node.
+"""
+function SumNode()
+	logval = -Inf  # The default logval is log(0)=-Inf
+	parents = InnerNode[]
+	children = Node[]
+	scope = Int[]
+
+	weights = Float64[]
+
+	SumNode(logval, parents, children, scope, weights)
+end
