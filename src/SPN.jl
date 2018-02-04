@@ -1,6 +1,6 @@
 module SPN
 
 include("nodes.jl")
-export ProdNode
+export Node, InnerNode, LeafNode, SumNode, ProdNode
 
 end # module
