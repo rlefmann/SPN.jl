@@ -1,5 +1,5 @@
 module SPN
 
-# package code goes here
+include("nodes.jl")
 
 end # module
