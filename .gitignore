@@ -1,3 +1,6 @@
 *.jl.cov
 *.jl.*.cov
 *.jl.mem
+
+spn.sublime-project
+spn.sublime-workspace
