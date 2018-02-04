@@ -39,5 +39,31 @@ function test_indicator_node_construction()
 end
 
 
+function test_connect_nodes()
+	s = SumNode()
+	p1 = ProdNode()
+	p2 = ProdNode()
+	i1 = IndicatorNode(1,0)
+	i2 = IndicatorNode(1,1)
+	i3 = IndicatorNode(1,2)
+
+	connect!(s,p1,weight=0.3)
+	connect!(s,p2,weight=0.7)
+	connect!(p1,i1)
+	connect!(p1,i2)
+	connect!(p2,i2)
+	connect!(p2,i3)
+
+	@test length(s.children) == 2
+	@test length(p1.children) == 2
+	@test length(p2.children) == 2
+	@test p1 in s.children
+	@test p2 in s.children
+	@test i1 in p1.children
+	@test !(i1 in p2.children)
+end
+
+
 test_inner_node_construction()
 test_indicator_node_construction()
+test_connect_nodes()
