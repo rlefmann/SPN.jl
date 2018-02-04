@@ -92,3 +92,41 @@ function SumNode()
 
 	SumNode(logval, parents, children, scope, weights)
 end
+
+
+################################################################
+# LEAF NODES
+# A leaf node represents some univariate probability
+# distribution.
+################################################################
+
+"""
+An indicator node for a random variable X and value k is 1 if X=k
+for the current input example from the dataset.
+Otherwise it has a value of 0. The corresponding log-values are
+log(1) = 0 and log(0)=-Inf.
+"""
+mutable struct IndicatorNode <: LeafNode
+    "the log-likelihood value of this node."
+    logval::Float64
+
+    "The parent nodes of this node."
+    parents::Vector{InnerNode}
+    "the scope of this node."
+    scope::Vector{Int}
+    "The value of the (discrete) variable that the node indicates."
+    indicates::Float64
+end
+
+
+"""
+	IndicatorNode(varidx::Int, indicates::Int) -> IndicatorNode
+
+Creates a new indicator node.
+"""
+function IndicatorNode(varidx::Int, indicates::Float64)
+    logval = -Inf
+    parents = InnerNode[]
+    scope = Int[varidx]
+    IndicatorNode(logval, parents, scope, indicates)
+end 
