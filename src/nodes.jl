@@ -122,11 +122,21 @@ end
 """
 	IndicatorNode(varidx::Int, indicates::Int) -> IndicatorNode
 
-Creates a new indicator node.
+Creates a new indicator node for a random variable with floating point values.
 """
 function IndicatorNode(varidx::Int, indicates::Float64)
     logval = -Inf
     parents = InnerNode[]
     scope = Int[varidx]
     IndicatorNode(logval, parents, scope, indicates)
-end 
+end
+
+"""
+Creates a new indicator node for a random variable with integer values.
+"""
+IndicatorNode(varidx::Int, indicates::Int) = IndicatorNode(varidx, float(indicates))
+
+"""
+Creates a new indicator node for a random variable with boolean values.
+"""
+IndicatorNode(varidx::Int, indicates::Bool) = IndicatorNode(varidx, float(indicates))

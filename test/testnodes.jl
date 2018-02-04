@@ -21,12 +21,21 @@ end
 
 
 function test_indicator_node_construction()
-	i = IndicatorNode(2,3.0)
+	# Create an indicator node and check the values of its fields:
+	i = IndicatorNode(1,3.0)
 	@test i.logval == -Inf
 	@test i.parents == InnerNode[]
 	@test length(i.scope) == 1
-	@test i.scope == [2]
+	@test i.scope == [1]
 	@test i.indicates == 3.0
+
+	# Indicator nodes for integer and boolean variables:
+	i2 = IndicatorNode(2,1)
+	@test i2.indicates == 1.0
+	i3 = IndicatorNode(3,true)
+	@test i3.indicates == 1.0
+	i4 = IndicatorNode(3,false)
+	@test i4.indicates == 0.0
 end
 
 
