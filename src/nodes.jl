@@ -127,6 +127,7 @@ end
 Creates a new indicator node for a random variable with floating point values.
 """
 function IndicatorNode(varidx::Int, indicates::Float64)
+	@assert varidx > 0
     logval = -Inf
     parents = InnerNode[]
     scope = Int[varidx]
@@ -196,4 +197,43 @@ Display an indicator node.
 """
 function Base.show(io::IO, i::IndicatorNode)
    print(io, "$(typeof(i))(parents=$(length(i.parents)), scope=$(i.scope[1]), indicates=$(i.indicates), logval=$(i.logval))") 
+end
+
+
+
+################################################################
+# EVALUATING NODES
+# An SPN is evaluated by an upward pass through the network,
+# evaluating one node after another. Evaluating a node means
+# setting its value according to the current input.
+# Working in log-space is less prone to numerical problems,
+# such as underflow resulting from multiplying together several
+# very small probabilities.
+################################################################
+
+
+# The unknown value:
+UNKNOWN = -1  # TODO: move to future parameters file.
+
+
+"""
+    value!(i::IndicatorNode, x::AbstractVector) -> Float64
+
+Computes the log value of the indicator node `i` on input `x`.
+
+Let X be the variable of the indicator and k the indicated value.
+The value is log(1)=0 if X==k or if X is not in the evidence.
+Otherwise the value of the indicator is log(0)=-Inf.
+"""
+function eval!(i::IndicatorNode, x::AbstractVector)
+    idx = i.scope[1]  # get the column index of the variable i indicates
+    @assert length(x) >= idx
+    if x[idx] ≈ i.indicates
+        i.logval = 0.0
+    elseif x[idx] == UNKNOWN  # variable not in evidence
+        i.logval = 0.0
+    else
+        i.logval = -Inf
+    end
+    return i.logval
 end

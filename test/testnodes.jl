@@ -64,6 +64,25 @@ function test_connect_nodes()
 end
 
 
+function test_eval_indicator_node()
+	i1 = IndicatorNode(1, 1.0)
+	i2 = IndicatorNode(2, 2.0)
+	i3 = IndicatorNode(3, 3.0)
+	x1 = Float64[1.0, 5.0]
+	x2 = Float64[1.0, 2.0]
+	eval!(i1, x1)
+	@test i1.logval == 0.0
+	eval!(i2, x1)
+	@test i2.logval == -Inf
+	eval!(i1, x2)
+	@test i1.logval == 0.0
+	eval!(i2, x2)
+	@test i2.logval == 0.0
+	@test_throws AssertionError eval!(i3, x1)
+end
+
+
 test_inner_node_construction()
 test_indicator_node_construction()
 test_connect_nodes()
+test_eval_indicator_node()
