@@ -217,7 +217,7 @@ UNKNOWN = -1  # TODO: move to future parameters file.
 
 
 """
-    value!(i::IndicatorNode, x::AbstractVector) -> Float64
+    eval!(i::IndicatorNode, x::AbstractVector) -> Float64
 
 Computes the log value of the indicator node `i` on input `x`.
 
@@ -236,4 +236,43 @@ function eval!(i::IndicatorNode, x::AbstractVector)
         i.logval = -Inf
     end
     return i.logval
+end
+
+
+"""
+    eval!(p::ProdNode, x::AbstractVector) -> Float64
+
+Computes the log value of the product node `p` on input `x`.
+
+The value of a product node is the product of the values of its children.
+Therefore, the log value is the sum of the log values of its children.
+"""
+function eval!(p::ProdNode, x::AbstractVector)
+    childvalues = [child.value for child in p.children]
+    p.value = sum(childvalues)
+    return p.value
+end
+
+
+"""
+    eval!(s::SumNode, x::AbstractVector; mpe::Bool=false) -> Float64
+
+Computes the log value of the sum node `s` on input `x`.
+
+The value of a sum node is the sum of the values of its children.
+In log-space this looks a lot more ugly:
+log(S_i) = log(sum_j w_ij S_j) = log(sum_j exp(log(w_ij)) * exp(log(S_j)))
+= log(sum_j exp(log(w_ij) + log(S_j))
+"""
+function eval!(s::SumNode, x::AbstractVector)
+    childvalues = [child.value for child in s.children]
+
+    sum_val = 0.0
+    for (w, cval) in zip(s.weights, childvalues)
+        weighted_cval = exp(cval + log(w))
+        sum_val += weighted_cval
+    end
+    
+    s.value = log(sum_val)
+    return s.value
 end
