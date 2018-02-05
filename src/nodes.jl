@@ -176,3 +176,24 @@ function connect!(parent::SumNode, child::Node; weight=rand())
     push!(child.parents, parent)
     push!(parent.weights, weight)
 end
+
+
+
+################################################################
+# DISPLAYING NODES
+################################################################
+
+"""
+Display an inner node.
+"""
+function Base.show(io::IO, n::InnerNode)
+   print(io, "$(typeof(n))(parents=$(length(n.parents)), children=$(length(n.children)), logval=$(n.logval))") 
+end
+
+
+"""
+Display an indicator node.
+"""
+function Base.show(io::IO, i::IndicatorNode)
+   print(io, "$(typeof(i))(parents=$(length(i.parents)), scope=$(i.scope[1]), indicates=$(i.indicates), logval=$(i.logval))") 
+end
