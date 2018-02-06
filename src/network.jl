@@ -14,6 +14,43 @@ mutable struct SumProductNetwork
 end
 
 
+"""
+    computeOrder(root::Node) -> Vector{Node}
+
+Computes a topological ordering of the nodes of an SPN rooted at `root`.
+Uses depth first search.
+"""
 function computeOrder(root::Node)
-    return Vector{Node}()  # TODO: implement post-order traversal
+    root.state = temporary
+    stack = Node[root]
+    order = Node[]
+    while ! isempty(stack)
+        node = stack[end]
+        if node.state == temporary
+            # children have not yet been added to the stack
+
+            # remove node from stack and add it to order:
+            node.state = permanently
+            pop!(stack)
+            push!(order, node)
+
+            # add all children to stack that are not on
+            # the stack or in the order list:
+            if typeof(node) <: InnerNode
+                for child in node.children
+                    if child.state == unmarked
+                        push!(stack, child)
+                        child.state = temporary
+                    end
+                end
+            end
+        end
+    end
+
+    # reset state of nodes:
+    for node in order
+        node.state = unmarked
+    end
+
+    return order
 end

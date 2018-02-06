@@ -1,4 +1,20 @@
 ################################################################
+# STATE OF A NODE
+################################################################
+
+"""
+A node can be in one of three states:
+* unmarked
+* temporary
+* permanently
+This is necessary for graph algorithms, especially for finding
+a topological order of the nodes in an SPN.
+"""
+@enum State unmarked temporary permanently
+
+
+
+################################################################
 # ABSTRACT NODES
 ################################################################
 
@@ -8,8 +24,9 @@ Every node of an SPN has to be of a subtype of `Node`.
 Every subtype of `Node` needs to have the fields (even though Julia does not enforce it):
 
 * `parents`:  a list of parent nodes
-* `scope`: a list of variables which influence the node.
+* `scope`: a list of variables which influence the node
 * `logval`: the current value of the node
+* `state`: a symbol representing the state of the node for graph traversals
 """
 abstract type Node end
 
@@ -39,6 +56,8 @@ A product node computes the product of the values of its child nodes.
 mutable struct ProdNode <: InnerNode
 	"The log-likelihood value of this node."
 	logval::Float64
+    "The node can have a state. Necessary for graph traversals."
+    state::State
 
 	"The parent nodes of this node."
 	parents::Vector{InnerNode}
@@ -54,10 +73,11 @@ Creates a new product node.
 """
 function ProdNode()
 	logval = -Inf  # The default logval is log(0)=-Inf
+    state = unmarked
 	parents = InnerNode[]
 	children = Node[]
 	scope = Int[]
-	ProdNode(logval, parents, children, scope)
+	ProdNode(logval, state, parents, children, scope)
 end
 
 
@@ -67,6 +87,8 @@ A sum node computes a weighted sum of the values of its child nodes.
 mutable struct SumNode <: InnerNode
 	"The log-likelihood value of this node."
 	logval::Float64
+    "The node can have a state. Necessary for graph traversals."
+    state::State
 
 	"The parent nodes of this node."
 	parents::Vector{InnerNode}
@@ -85,13 +107,14 @@ Creates a new sum node.
 """
 function SumNode()
 	logval = -Inf  # The default logval is log(0)=-Inf
+    state = unmarked
 	parents = InnerNode[]
 	children = Node[]
 	scope = Int[]
 
 	weights = Float64[]
 
-	SumNode(logval, parents, children, scope, weights)
+	SumNode(logval, state, parents, children, scope, weights)
 end
 
 
@@ -111,6 +134,8 @@ log(1) = 0 and log(0)=-Inf.
 mutable struct IndicatorNode <: LeafNode
     "the log-likelihood value of this node."
     logval::Float64
+    "The node can have a state. Necessary for graph traversals."
+    state::State
 
     "The parent nodes of this node."
     parents::Vector{InnerNode}
@@ -129,9 +154,10 @@ Creates a new indicator node for a random variable with floating point values.
 function IndicatorNode(varidx::Int, indicates::Float64)
 	@assert varidx > 0
     logval = -Inf
+    state = unmarked
     parents = InnerNode[]
     scope = Int[varidx]
-    IndicatorNode(logval, parents, scope, indicates)
+    IndicatorNode(logval, state, parents, scope, indicates)
 end
 
 """
