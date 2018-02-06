@@ -255,7 +255,7 @@ end
 
 
 """
-    eval!(s::SumNode, x::AbstractVector; mpe::Bool=false) -> Float64
+    eval!(s::SumNode, x::AbstractVector) -> Float64
 
 Computes the log value of the sum node `s` on input `x`.
 
