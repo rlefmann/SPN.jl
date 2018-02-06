@@ -248,9 +248,9 @@ The value of a product node is the product of the values of its children.
 Therefore, the log value is the sum of the log values of its children.
 """
 function eval!(p::ProdNode, x::AbstractVector)
-    childvalues = [child.value for child in p.children]
-    p.value = sum(childvalues)
-    return p.value
+    childvalues = [child.logval for child in p.children]
+    p.logval = sum(childvalues)
+    return p.logval
 end
 
 
@@ -265,7 +265,7 @@ log(S_i) = log(sum_j w_ij S_j) = log(sum_j exp(log(w_ij)) * exp(log(S_j)))
 = log(sum_j exp(log(w_ij) + log(S_j))
 """
 function eval!(s::SumNode, x::AbstractVector)
-    childvalues = [child.value for child in s.children]
+    childvalues = [child.logval for child in s.children]
 
     sum_val = 0.0
     for (w, cval) in zip(s.weights, childvalues)
@@ -273,6 +273,6 @@ function eval!(s::SumNode, x::AbstractVector)
         sum_val += weighted_cval
     end
     
-    s.value = log(sum_val)
-    return s.value
+    s.logval = log(sum_val)
+    return s.logval
 end
