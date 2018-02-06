@@ -211,26 +211,19 @@ end
 # very small probabilities.
 ################################################################
 
-
-# The unknown value:
-UNKNOWN = -1  # TODO: move to future parameters file.
-
-
 """
     eval!(i::IndicatorNode, x::AbstractVector) -> Float64
 
 Computes the log value of the indicator node `i` on input `x`.
 
 Let X be the variable of the indicator and k the indicated value.
-The value is log(1)=0 if X==k or if X is not in the evidence.
+The value is log(1)=0 if X==k.
 Otherwise the value of the indicator is log(0)=-Inf.
 """
 function eval!(i::IndicatorNode, x::AbstractVector)
     idx = i.scope[1]  # get the column index of the variable i indicates
     @assert length(x) >= idx
     if x[idx] ≈ i.indicates
-        i.logval = 0.0
-    elseif x[idx] == UNKNOWN  # variable not in evidence
         i.logval = 0.0
     else
         i.logval = -Inf
