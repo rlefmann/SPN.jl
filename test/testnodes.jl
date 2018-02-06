@@ -82,7 +82,39 @@ function test_eval_indicator_node()
 end
 
 
+function test_eval_inner_nodes()
+	s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
+	
+	x = [true, false]
+
+	# Calculate value of nodes manually (not in logspace):
+	s1_val = 0.6*1+0.4*0
+	s2_val = 0.9*1+0.1*0
+	s3_val = 0.3*0+0.7*1
+	s4_val = 0.2*0+0.8*1
+	p1_val = s1_val*s3_val
+	p2_val = s1_val*s4_val
+	p3_val = s2_val*s4_val
+	s_val = 0.5*p1_val + 0.2*p2_val + 0.3*p3_val
+
+	# Compare results:
+	@test eval!(i1, x) ≈ log(1)
+	@test eval!(i2, x) ≈ log(0)
+	@test eval!(i3, x) ≈ log(0)
+	@test eval!(i4, x) ≈ log(1)
+	@test eval!(s1, x) ≈ log(s1_val)
+	@test eval!(s2, x) ≈ log(s2_val)
+	@test eval!(s3, x) ≈ log(s3_val)
+	@test eval!(s4, x) ≈ log(s4_val)
+	@test eval!(p1, x) ≈ log(p1_val)
+	@test eval!(p2, x) ≈ log(p2_val)
+	@test eval!(p3, x) ≈ log(p3_val)
+	@test eval!(s, x) ≈ log(s_val)
+end
+
+
 test_inner_node_construction()
 test_indicator_node_construction()
 test_connect_nodes()
 test_eval_indicator_node()
+test_eval_inner_nodes()
