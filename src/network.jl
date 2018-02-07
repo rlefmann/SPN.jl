@@ -26,22 +26,22 @@ function computeOrder(root::Node)
     order = Node[]
     while ! isempty(stack)
         node = stack[end]
-        if node.state == temporary
-            # children have not yet been added to the stack
+        @assert node.state == temporary
+        # remove node from stack and add it to order:
+        node.state = permanently
+        pop!(stack)
+        push!(order, node)
 
-            # remove node from stack and add it to order:
-            node.state = permanently
-            pop!(stack)
-            push!(order, node)
-
-            # add all children to stack that are not on
-            # the stack or in the order list:
-            if typeof(node) <: InnerNode
-                for child in node.children
-                    if child.state == unmarked
-                        push!(stack, child)
-                        child.state = temporary
-                    end
+        # add all children to stack that are not on
+        # the stack or in the order list:
+        if typeof(node) <: InnerNode
+            for child in node.children
+                if child.state == unmarked
+                    push!(stack, child)
+                    child.state = temporary
+                elseif child.state == permanently
+                    # graph contains cycle
+                    # TODO: throw exception
                 end
             end
         end
