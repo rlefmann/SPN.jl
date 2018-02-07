@@ -54,3 +54,19 @@ function computeOrder(root::Node)
 
     return order
 end
+
+
+"""
+Display a SumProductNetwork object.
+"""
+function Base.show(io::IO, spn::SumProductNetwork)
+    print(io, "SumProductNetwork(size=$(length(spn)))")
+end
+
+
+"""
+The number of nodes of the SumProductNetwork.
+"""
+function Base.length(spn::SumProductNetwork)
+    return length(spn.order)
+end
