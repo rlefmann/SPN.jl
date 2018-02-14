@@ -192,6 +192,17 @@ end
 
 
 """
+Evaluates all nodes of an SPN.
+"""
+function eval!(spn::SumProductNetwork, x::AbstractVector)
+    for node in spn.order
+        eval!(node, x)
+    end
+    return spn.root.logval
+end
+
+
+"""
 Sets the `logdrv` field of every node to -Inf.
 """
 function initDerivatives!(spn::SumProductNetwork)
