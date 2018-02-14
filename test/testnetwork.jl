@@ -47,6 +47,61 @@ function test_compute_order_recursive_cycles()
     @test_throws ErrorException SumProductNetwork(s1, recursive=false)
 end
 
+
+function test_eval()
+    s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
+    spn = SumProductNetwork(s, recursive=false)
+
+    x = [true, false]
+    eval!(spn, x)
+
+    @test i1.logval ≈ log(1)
+    @test i2.logval ≈ log(0)
+    @test i3.logval ≈ log(0)
+    @test i4.logval ≈ log(1)
+
+    @test s1.logval ≈ log(0.6)
+    @test s2.logval ≈ log(0.9)
+    @test s3.logval ≈ log(0.7)
+    @test s4.logval ≈ log(0.8)
+
+    @test p1.logval ≈ log(0.42)
+    @test p2.logval ≈ log(0.48)
+    @test p3.logval ≈ log(0.72)
+
+    @test s.logval ≈ log(0.522)
+end
+
+
+function test_computeDerivatives()
+    s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
+    spn = SumProductNetwork(s, recursive=false)
+
+    x = [true, false]
+    eval!(spn, x)
+
+    computeDerivatives!(spn)
+
+    @test s.logdrv ≈ 0
+
+    @test p1.logdrv ≈ log(0.5)
+    @test p2.logdrv ≈ log(0.2)
+    @test p3.logdrv ≈ log(0.3)
+
+    @test s1.logdrv ≈ log(0.5*0.7 + 0.2*0.8)
+    @test s2.logdrv ≈ log(0.3*0.8)
+    @test s3.logdrv ≈ log(0.5*0.6)
+    @test s4.logdrv ≈ log(0.2*0.6 + 0.3*0.9)
+
+    @test i1.logdrv ≈ log((0.5*0.7 + 0.2*0.8)*0.6 + (0.3*0.8)*0.9)
+    @test i2.logdrv ≈ log((0.5*0.7 + 0.2*0.8)*0.4 + (0.3*0.8)*0.1)
+    @test i3.logdrv ≈ log((0.5*0.6)*0.3 + (0.2*0.6 + 0.3*0.9)*0.2)
+    @test i4.logdrv ≈ log((0.5*0.6)*0.7 + (0.2*0.6 + 0.3*0.9)*0.8) 
+end
+
+
 test_compute_order_recursive()
 test_compute_order_stack()
 test_compute_order_recursive_cycles()
+test_eval()
+test_computeDerivatives()
