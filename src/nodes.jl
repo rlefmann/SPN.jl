@@ -336,3 +336,20 @@ function passDerivative!(n::InnerNode)
         end
     end
 end
+
+
+
+################################################################
+# MISCELLANEOUS FUNCTIONS
+################################################################
+
+"""
+    normalize!(s::SumNode)
+
+Normalizes the weights of the edges emanating from a sum node, 
+such that they sum up to 1.
+"""
+function Base.normalize!(s::SumNode)
+    ε::Float64 = 1e-10
+    s.weights = s.weights / (sum(s.weights)+ε)
+end
