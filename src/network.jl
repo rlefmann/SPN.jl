@@ -191,6 +191,33 @@ end
 =#
 
 
+"""
+Sets the `logdrv` field of every node to -Inf.
+"""
+function initDerivatives!(spn::SumProductNetwork)
+    for node in spn.order
+        node.logdrv = -Inf
+    end
+end
+
+
+"""
+Computes the log derivative of the likelihood w.r.t. all
+nodes in the SPN.
+Performs a top-down pass through the network (backpropagation).
+"""
+function computeDerivatives!(spn::SumProductNetwork)
+    for node in reverse(spn.order)    
+        # root derivative is log(1)=0:
+        if node == spn.root
+            node.logdrv = 0.0
+            continue
+        elseif typeof(node) <: InnerNode
+            passDerivative!(node)
+        end
+    end
+end
+
 
 
 """
@@ -207,3 +234,5 @@ The number of nodes of the SumProductNetwork.
 function Base.length(spn::SumProductNetwork)
     return length(spn.order)
 end
+
+
