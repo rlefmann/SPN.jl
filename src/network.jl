@@ -218,12 +218,12 @@ nodes in the SPN.
 Performs a top-down pass through the network (backpropagation).
 """
 function computeDerivatives!(spn::SumProductNetwork)
-    for node in reverse(spn.order)    
-        # root derivative is log(1)=0:
-        if node == spn.root
-            node.logdrv = 0.0
-            continue
-        elseif typeof(node) <: InnerNode
+
+    # root derivative is log(1)=0:
+    spn.root.logdrv = 0.0
+
+    for node in reverse(spn.order)
+        if typeof(node) <: InnerNode
             passDerivative!(node)
         end
     end
