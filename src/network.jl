@@ -7,13 +7,14 @@ mutable struct SumProductNetwork
     """
     Creates a new SPN from an existing graph of nodes.
     """
-    function SumProductNetwork(root::Node)
-        order = computeOrder(root)
+    function SumProductNetwork(root::Node; recursive=true)
+        order = computeOrder(root, recursive=recursive)
         new(root, order)
     end
 end
 
 
+#=
 """
     computeOrder(root::Node) -> Vector{Node}
 
@@ -39,9 +40,6 @@ function computeOrder(root::Node)
                 if child.state == unmarked
                     push!(stack, child)
                     child.state = temporary
-                elseif child.state == permanently
-                    # graph contains cycle
-                    # TODO: throw exception
                 end
             end
         end
@@ -54,6 +52,145 @@ function computeOrder(root::Node)
 
     return order
 end
+=#
+
+
+"""
+    computeOrder(root::Node) -> Vector{Node}
+
+Computes a topological ordering of the nodes of an SPN
+rooted at `root` by performing a post-order traversal
+of the network. 
+"""
+function computeOrder(root::Node; recursive=true)
+    if recursive
+        return computeOrderRecursive(root)
+    else
+        return computeOrderStack(root)
+    end
+end
+
+
+"""
+Recursively compute topological order. Might probably be slow.
+"""
+function computeOrderRecursive(root::Node)
+    order = Node[]
+
+    """
+    Post-order traversal for inner nodes.
+    """
+    function postOrder(n::InnerNode)
+        n.state = temporary
+        for child in n.children
+            if child.state == unmarked
+                postOrder(child)
+            elseif child.state == temporary
+                error("network contains cycle. Not a DAG.")
+            end
+        end
+        n.state = permanently
+        push!(order, n)
+    end
+
+    """
+    Post-order traversal for leaf nodes.
+    """
+    function postOrder(l::LeafNode)
+        push!(order, l)
+        l.state = permanently
+    end
+
+    postOrder(root)
+
+    # reset state of nodes:
+    for node in order
+        node.state = unmarked
+    end
+
+    return order
+end
+
+
+"""
+Computes order non-recursive, using a stack.
+"""
+function computeOrderStack(root::Node)
+    order = Vector{Node}()
+    stack = Vector{Node}()
+    push!(stack, root)
+
+    while ! isempty(stack)
+
+        node = pop!(stack)
+
+        # all children have been visited:
+        if node.state == temporary
+            push!(order, node)
+            node.state = permanently
+            continue
+        end
+
+        node.state = temporary
+
+        push!(stack, node)
+
+        if typeof(node) <: InnerNode
+            for child in node.children
+                if child.state == unmarked
+                    push!(stack, child)
+                elseif child.state == temporary
+                    error("network contains cycle. Not a DAG.")
+                end
+            end
+        end
+    end
+
+    # reset state of nodes:
+    for node in order
+        node.state = unmarked
+    end
+
+    return order
+end
+
+#=
+function computeOrderStack(root::Node)
+    order = Vector{Node}()
+    stack = Vector{ Tuple{Bool, Node} }()
+    push!(stack, (false, root))
+
+    while ! isempty(stack)
+
+        (complete, node) = pop!(stack)
+
+        # all children have been visited:
+        if complete
+            push!(order, node)
+            node.state = permanently
+            continue
+        end
+
+        node.state = temporary
+
+        push!(stack, (true, node))
+
+        if typeof(node) <: InnerNode
+            for child in node.children
+                if child.state == unmarked
+                    push!(stack, (false, child))
+                elseif child.state == temporary
+                    error("network contains cycle. Not a DAG.")
+                end
+            end
+        end
+    end
+
+    return order
+end
+=#
+
+
 
 
 """
