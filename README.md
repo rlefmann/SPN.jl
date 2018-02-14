@@ -44,3 +44,11 @@ connect!(s4,i4,weight=0.8)
 
 spn = SumProductNetwork(s)
 ```
+
+## Evaluate the SPN
+
+```julia
+x = [true, false]
+eval!(spn, x)
+@show spn.root.logval
+```
