@@ -7,4 +7,7 @@ export connect!, eval!
 include("network.jl")
 export SumProductNetwork
 
+include("utils.jl")
+export addExp
+
 end # module

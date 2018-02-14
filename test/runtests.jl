@@ -52,3 +52,4 @@ end
 
 include("testnodes.jl")
 include("testnetwork.jl")
+include("testutils.jl")
