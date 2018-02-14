@@ -26,6 +26,7 @@ Every subtype of `Node` needs to have the fields (even though Julia does not enf
 * `parents`:  a list of parent nodes
 * `scope`: a list of variables which influence the node
 * `logval`: the current value of the node
+* `logdrv`: the current value of the log derivative
 * `state`: a symbol representing the state of the node for graph traversals
 """
 abstract type Node end
@@ -56,6 +57,8 @@ A product node computes the product of the values of its child nodes.
 mutable struct ProdNode <: InnerNode
 	"The log-likelihood value of this node."
 	logval::Float64
+    "The log-derivative value of this node."
+    logdrv::Float64
     "The node can have a state. Necessary for graph traversals."
     state::State
 
@@ -73,11 +76,12 @@ Creates a new product node.
 """
 function ProdNode()
 	logval = -Inf  # The default logval is log(0)=-Inf
+    logdrv = -Inf  # The default logdrv is log(0)=-Inf
     state = unmarked
 	parents = InnerNode[]
 	children = Node[]
 	scope = Int[]
-	ProdNode(logval, state, parents, children, scope)
+	ProdNode(logval, logdrv, state, parents, children, scope)
 end
 
 
@@ -87,6 +91,8 @@ A sum node computes a weighted sum of the values of its child nodes.
 mutable struct SumNode <: InnerNode
 	"The log-likelihood value of this node."
 	logval::Float64
+    "The log-derivative value of this node."
+    logdrv::Float64
     "The node can have a state. Necessary for graph traversals."
     state::State
 
@@ -107,6 +113,7 @@ Creates a new sum node.
 """
 function SumNode()
 	logval = -Inf  # The default logval is log(0)=-Inf
+    logdrv = -Inf  # The default logdrv is log(0)=-Inf
     state = unmarked
 	parents = InnerNode[]
 	children = Node[]
@@ -114,7 +121,7 @@ function SumNode()
 
 	weights = Float64[]
 
-	SumNode(logval, state, parents, children, scope, weights)
+	SumNode(logval, logdrv, state, parents, children, scope, weights)
 end
 
 
@@ -134,6 +141,8 @@ log(1) = 0 and log(0)=-Inf.
 mutable struct IndicatorNode <: LeafNode
     "the log-likelihood value of this node."
     logval::Float64
+    "The log-derivative value of this node."
+    logdrv::Float64
     "The node can have a state. Necessary for graph traversals."
     state::State
 
@@ -154,10 +163,11 @@ Creates a new indicator node for a random variable with floating point values.
 function IndicatorNode(varidx::Int, indicates::Float64)
 	@assert varidx > 0
     logval = -Inf
+    logdrv = -Inf
     state = unmarked
     parents = InnerNode[]
     scope = Int[varidx]
-    IndicatorNode(logval, state, parents, scope, indicates)
+    IndicatorNode(logval, logdrv, state, parents, scope, indicates)
 end
 
 """
@@ -232,7 +242,7 @@ end
 # An SPN is evaluated by an upward pass through the network,
 # evaluating one node after another. Evaluating a node means
 # setting its value according to the current input.
-# Working in log-space is less prone to numerical problems,
+# Working in logspace is less prone to numerical problems,
 # such as underflow resulting from multiplying together several
 # very small probabilities.
 ################################################################
@@ -294,4 +304,35 @@ function eval!(s::SumNode, x::AbstractVector)
     
     s.logval = log(sum_val)
     return s.logval
+end
+
+
+
+################################################################
+# COMPUTING NODE DERIVATIVES
+# We require the derivatives of the likelihood with respect
+# to the nodes of the network: ∂S/∂S_i. Because values are
+# treated in logspace, derivatives are also in logspace.
+# That means, we compute log(∂S/∂S_i).
+# The derivatives can be computed using backpropagation.
+################################################################
+
+"""
+Computes the derivative
+"""
+function passDerivative!(n::InnerNode)
+    for (i, child) in enumerate(n.children)    
+        # compute l value: l=∂S_n/∂S_i
+        if typeof(n) == SumNode
+            l = log(n.weights[i])
+        else  # n is ProdNode
+            l = n.logval - child.logval
+        end
+
+        if child.logdrv == -Inf
+            child.logdrv = n.logdrv + l
+        else
+            child.logdrv = addExp(child.logdrv, n.logdrv + l)
+        end
+    end
 end
