@@ -83,6 +83,27 @@ function test_setinput_indicator_node()
 end
 
 
+function test_setinput_indicator_node_partial_evidence()
+	i1 = IndicatorNode(1, 2.0)
+	i2 = IndicatorNode(1, 3.0)
+	i3 = IndicatorNode(2, 2.0)
+	i4 = IndicatorNode(2, 3.0)
+
+	x = Float64[2.0, 3.0]
+	e = BitVector([true, false])
+
+	setInput!(i1, x, e)
+	setInput!(i2, x, e)
+	setInput!(i3, x, e)
+	setInput!(i4, x, e)
+
+	@test i1.logval == 0.0
+	@test i2.logval == -Inf
+	@test i3.logval == 0.0
+	@test i4.logval == 0.0
+end
+
+
 function test_eval_inner_nodes()
 	s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
 	
@@ -139,5 +160,6 @@ test_inner_node_construction()
 test_indicator_node_construction()
 test_connect_nodes()
 test_setinput_indicator_node()
+test_setinput_indicator_node_partial_evidence()
 test_eval_inner_nodes()
 test_normalize()
