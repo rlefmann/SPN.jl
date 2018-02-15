@@ -100,8 +100,25 @@ function test_computeDerivatives()
 end
 
 
+function test_normalize()
+    s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
+    spn = SumProductNetwork(s, recursive=false)
+
+    s.weights *= 3
+    s1.weights *= 5
+
+    normalize!(spn)
+    @test s.weights[1] ≈ 0.5
+    @test s.weights[2] ≈ 0.2
+    @test s.weights[3] ≈ 0.3
+    @test s1.weights[1] ≈ 0.6
+    @test s1.weights[2] ≈ 0.4
+end
+
+
 test_compute_order_recursive()
 test_compute_order_stack()
 test_compute_order_recursive_cycles()
 test_eval()
 test_computeDerivatives()
+test_normalize()

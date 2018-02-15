@@ -113,8 +113,24 @@ function test_eval_inner_nodes()
 end
 
 
+function test_normalize()
+	s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
+	s.weights *= 3
+	normalize!(s)
+	@test s.weights[1] ≈ 0.5
+	@test s.weights[2] ≈ 0.2
+	@test s.weights[3] ≈ 0.3
+
+	s1.weights *= 5
+	normalize!(s1)
+	@test s1.weights[1] ≈ 0.6
+	@test s1.weights[2] ≈ 0.4
+end
+
+
 test_inner_node_construction()
 test_indicator_node_construction()
 test_connect_nodes()
 test_eval_indicator_node()
 test_eval_inner_nodes()
+test_normalize()
