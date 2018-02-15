@@ -16,11 +16,33 @@ function test_marginal_inference_incomplete_evidence()
     # no evidence at all should lead to log(1)=0
     e = BitVector([false, false])
     p = marginalInference!(spn, x, e)
-    # we cannot use ≈ here, because the difference is
-    # slightly bigger than the default atol:
-    @test isapprox(p, 0; atol=10e-6) == true
+    @test p ≈ 0 atol=10e-6
 end
 
 
+function test_conditional_inference()
+    s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
+    spn = SumProductNetwork(s)
+    x = [true, false]
+
+    # empty query and evidence should lead to log(1)=0
+    q = e = falses(2)
+    p = conditionalInference!(spn, x, q, e)
+    @test p ≈ 0 atol=10e-6
+
+    # if the evidence contains variables of the query an error is thrown
+
+    # compute P(X_2 = false | X_1 = true):
+    x = [true, false]
+    e = BitVector([true,false])
+    q = BitVector([false,true])
+    # Expected result:
+    # P(X_1=t,x_2=f) = 0.522
+    # P(X_1=t) = 0.6*0.5 + 0.6*0.2 + 0.9*0.3 (see above)
+    expected = log(0.522 / (0.6*0.5 + 0.6*0.2 + 0.9*0.3))
+    @test conditionalInference!(spn, x, q, e) ≈ expected
+end
+
 test_marginal_inference_complete_evidence()
 test_marginal_inference_incomplete_evidence()
+test_conditional_inference()

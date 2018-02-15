@@ -49,7 +49,6 @@ function create_toy_spn()
 end
 
 
-
 include("testnodes.jl")
 include("testnetwork.jl")
 include("testinference.jl")
