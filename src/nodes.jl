@@ -248,18 +248,22 @@ end
 ################################################################
 
 """
-    setInput!(i::IndicatorNode, x::AbstractVector)
+    setInput!(i::IndicatorNode, x::AbstractVector, e::BitVector)
 
 Sets the logval of the indicator node `i` according to the input `x`.
+The bitvector `e` represents which values are in the evidence
+and which are unknown.
 
 Let X be the variable of the indicator and k the indicated value.
-The value is log(1)=0 if X==k.
+The value is log(1)=0 if X==k or if the value of X is unknown. 
 Otherwise the value of the indicator is log(0)=-Inf.
 """
-function setInput!(i::IndicatorNode, x::AbstractVector)
+function setInput!(i::IndicatorNode, x::AbstractVector, e::BitVector=trues(length(x)))
     idx = i.scope[1]  # get the column index of the variable i indicates
     @assert length(x) >= idx
-    if x[idx] ≈ i.indicates
+    if e[idx] == false  # variable not in evidence
+        i.logval = 0.0
+    elseif x[idx] ≈ i.indicates
         i.logval = 0.0
     else
         i.logval = -Inf
@@ -271,7 +275,7 @@ end
     eval!(i::IndicatorNode) -> Float64
 
 Returns the log value of the indicator node `i` on the current input.
-The logval is already computed by `setInput`.
+The logval is already computed by `setInput!`.
 """
 function eval!(i::IndicatorNode)
     return i.logval
