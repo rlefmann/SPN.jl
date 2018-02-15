@@ -247,3 +247,15 @@ function Base.length(spn::SumProductNetwork)
 end
 
 
+"""
+    normalize!(spn::SumProductNetwork)
+
+Normalizes the SPN. All edge weights emanating from a sum node sum up to 1.
+"""
+function Base.normalize!(spn::SumProductNetwork)
+    for node in spn.order
+        if typeof(node) == SumNode
+            SPN.normalize!(node)
+        end
+    end
+end
