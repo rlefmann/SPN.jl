@@ -1,6 +1,10 @@
 # SPN
 
-Sum-Product Networks, implemented in Julia.
+This [Julia](http://julialang.org) package is an implementation of sum-product networks, including inference and parameter learning.
+
+## Documentation
+
+The documentation of this package can be found [here](docs/index.md).
 
 ## Create an SPN
 
