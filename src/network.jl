@@ -190,13 +190,29 @@ function computeOrderStack(root::Node)
 end
 =#
 
+"""
+    setInput!(spn::SumProductNetwork, x::AbstractVector)
+
+Sets the logval of all leaf nodes of the SPN according to the input.
+"""
+function setInput!(spn::SumProductNetwork, x::AbstractVector)
+    for node in spn.order
+        if typeof(node) <: LeafNode
+            setInput!(node, x)
+        end
+    end
+end
+
 
 """
-Evaluates all nodes of an SPN.
+    eval!(spn::SumProductNetwork) -> Float64
+
+Evaluates all nodes of an SPN on the current input. Returns the
+logval of the root node.
 """
-function eval!(spn::SumProductNetwork, x::AbstractVector)
+function eval!(spn::SumProductNetwork)
     for node in spn.order
-        eval!(node, x)
+        eval!(node)
     end
     return spn.root.logval
 end

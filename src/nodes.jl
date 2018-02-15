@@ -248,15 +248,15 @@ end
 ################################################################
 
 """
-    eval!(i::IndicatorNode, x::AbstractVector) -> Float64
+    setInput!(i::IndicatorNode, x::AbstractVector)
 
-Computes the log value of the indicator node `i` on input `x`.
+Sets the logval of the indicator node `i` according to the input `x`.
 
 Let X be the variable of the indicator and k the indicated value.
 The value is log(1)=0 if X==k.
 Otherwise the value of the indicator is log(0)=-Inf.
 """
-function eval!(i::IndicatorNode, x::AbstractVector)
+function setInput!(i::IndicatorNode, x::AbstractVector)
     idx = i.scope[1]  # get the column index of the variable i indicates
     @assert length(x) >= idx
     if x[idx] ≈ i.indicates
@@ -264,19 +264,29 @@ function eval!(i::IndicatorNode, x::AbstractVector)
     else
         i.logval = -Inf
     end
+end
+
+
+"""
+    eval!(i::IndicatorNode) -> Float64
+
+Returns the log value of the indicator node `i` on the current input.
+The logval is already computed by `setInput`.
+"""
+function eval!(i::IndicatorNode)
     return i.logval
 end
 
 
 """
-    eval!(p::ProdNode, x::AbstractVector) -> Float64
+    eval!(p::ProdNode) -> Float64
 
-Computes the log value of the product node `p` on input `x`.
+Computes the log value of the product node `p` on the current input.
 
 The value of a product node is the product of the values of its children.
 Therefore, the log value is the sum of the log values of its children.
 """
-function eval!(p::ProdNode, x::AbstractVector)
+function eval!(p::ProdNode)
     childvalues = [child.logval for child in p.children]
     p.logval = sum(childvalues)
     return p.logval
@@ -284,16 +294,16 @@ end
 
 
 """
-    eval!(s::SumNode, x::AbstractVector) -> Float64
+    eval!(s::SumNode) -> Float64
 
-Computes the log value of the sum node `s` on input `x`.
+Computes the log value of the sum node `s` on the current input.
 
 The value of a sum node is the sum of the values of its children.
 In log-space this looks a lot more ugly:
 log(S_i) = log(sum_j w_ij S_j) = log(sum_j exp(log(w_ij)) * exp(log(S_j)))
 = log(sum_j exp(log(w_ij) + log(S_j))
 """
-function eval!(s::SumNode, x::AbstractVector)
+function eval!(s::SumNode)
     childvalues = [child.logval for child in s.children]
 
     sum_val = 0.0

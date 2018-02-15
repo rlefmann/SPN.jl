@@ -53,7 +53,8 @@ function test_eval()
     spn = SumProductNetwork(s, recursive=false)
 
     x = [true, false]
-    eval!(spn, x)
+    setInput!(spn, x)
+    eval!(spn)
 
     @test i1.logval ≈ log(1)
     @test i2.logval ≈ log(0)
@@ -78,7 +79,8 @@ function test_computeDerivatives()
     spn = SumProductNetwork(s, recursive=false)
 
     x = [true, false]
-    eval!(spn, x)
+    setInput!(spn, x)
+    eval!(spn)
 
     computeDerivatives!(spn)
 

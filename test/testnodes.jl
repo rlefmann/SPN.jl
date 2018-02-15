@@ -64,21 +64,22 @@ function test_connect_nodes()
 end
 
 
-function test_eval_indicator_node()
+function test_setinput_indicator_node()
 	i1 = IndicatorNode(1, 1.0)
 	i2 = IndicatorNode(2, 2.0)
 	i3 = IndicatorNode(3, 3.0)
 	x1 = Float64[1.0, 5.0]
 	x2 = Float64[1.0, 2.0]
-	eval!(i1, x1)
+	setInput!(i1, x1)
+	setInput!(i2, x1)
 	@test i1.logval == 0.0
-	eval!(i2, x1)
 	@test i2.logval == -Inf
-	eval!(i1, x2)
+
+	setInput!(i1, x2)
 	@test i1.logval == 0.0
-	eval!(i2, x2)
+	setInput!(i2, x2)
 	@test i2.logval == 0.0
-	@test_throws AssertionError eval!(i3, x1)
+	@test_throws AssertionError setInput!(i3, x1)
 end
 
 
@@ -97,19 +98,25 @@ function test_eval_inner_nodes()
 	p3_val = s2_val*s4_val
 	s_val = 0.5*p1_val + 0.2*p2_val + 0.3*p3_val
 
+	# set input of indicator nodes:
+	setInput!(i1, x)
+	setInput!(i2, x)
+	setInput!(i3, x)
+	setInput!(i4, x)
+
 	# Compare results:
-	@test eval!(i1, x) ≈ log(1)
-	@test eval!(i2, x) ≈ log(0)
-	@test eval!(i3, x) ≈ log(0)
-	@test eval!(i4, x) ≈ log(1)
-	@test eval!(s1, x) ≈ log(s1_val)
-	@test eval!(s2, x) ≈ log(s2_val)
-	@test eval!(s3, x) ≈ log(s3_val)
-	@test eval!(s4, x) ≈ log(s4_val)
-	@test eval!(p1, x) ≈ log(p1_val)
-	@test eval!(p2, x) ≈ log(p2_val)
-	@test eval!(p3, x) ≈ log(p3_val)
-	@test eval!(s, x) ≈ log(s_val)
+	@test eval!(i1) ≈ log(1)
+	@test eval!(i2) ≈ log(0)
+	@test eval!(i3) ≈ log(0)
+	@test eval!(i4) ≈ log(1)
+	@test eval!(s1) ≈ log(s1_val)
+	@test eval!(s2) ≈ log(s2_val)
+	@test eval!(s3) ≈ log(s3_val)
+	@test eval!(s4) ≈ log(s4_val)
+	@test eval!(p1) ≈ log(p1_val)
+	@test eval!(p2) ≈ log(p2_val)
+	@test eval!(p3) ≈ log(p3_val)
+	@test eval!(s) ≈ log(s_val)
 end
 
 
@@ -131,6 +138,6 @@ end
 test_inner_node_construction()
 test_indicator_node_construction()
 test_connect_nodes()
-test_eval_indicator_node()
+test_setinput_indicator_node()
 test_eval_inner_nodes()
 test_normalize()
