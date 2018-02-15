@@ -52,4 +52,5 @@ end
 
 include("testnodes.jl")
 include("testnetwork.jl")
+include("testinference.jl")
 include("testutils.jl")
