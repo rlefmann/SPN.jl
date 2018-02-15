@@ -191,14 +191,14 @@ end
 =#
 
 """
-    setInput!(spn::SumProductNetwork, x::AbstractVector)
+    setInput!(spn::SumProductNetwork, x::AbstractVector, e::BitVector)
 
 Sets the logval of all leaf nodes of the SPN according to the input.
 """
-function setInput!(spn::SumProductNetwork, x::AbstractVector)
+function setInput!(spn::SumProductNetwork, x::AbstractVector, e::BitVector=trues(length(x)))
     for node in spn.order
         if typeof(node) <: LeafNode
-            setInput!(node, x)
+            setInput!(node, x, e)
         end
     end
 end
