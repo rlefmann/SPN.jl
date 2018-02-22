@@ -105,6 +105,8 @@ mutable struct SumNode <: InnerNode
 
 	"The weights of the edges connecting the sum node with its child nodes."
 	weights::Vector{Float64}
+    # counts for each child. The EM algorithm uses these to compute new weights.
+    counts::Vector{Float64}
 end
 
 
@@ -120,8 +122,9 @@ function SumNode()
 	scope = Int[]
 
 	weights = Float64[]
+    counts = Float64[]
 
-	SumNode(logval, logdrv, state, parents, children, scope, weights)
+	SumNode(logval, logdrv, state, parents, children, scope, weights, counts)
 end
 
 
@@ -212,6 +215,7 @@ function connect!(parent::SumNode, child::Node; weight=rand())
     push!(parent.children, child)
     push!(child.parents, parent)
     push!(parent.weights, weight)
+    push!(parent.counts, 0.0)
 end
 
 
@@ -366,4 +370,14 @@ such that they sum up to 1.
 function Base.normalize!(s::SumNode)
     ε::Float64 = 1e-10
     s.weights = s.weights / (sum(s.weights)+ε)
+end
+
+
+"""
+    resetCounts!(s::SumNode)
+
+Sets the counts for each child of a `SumNode` to 0.
+"""
+function resetCounts!(s::SumNode)
+    s.counts = zeros(Float64, length(s.weights))
 end

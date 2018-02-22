@@ -275,3 +275,17 @@ function Base.normalize!(spn::SumProductNetwork)
         end
     end
 end
+
+
+"""
+    resetCounts!(spn::SumProductNetwork)
+
+Sets the counts for each child of every `SumNode` to 0.
+"""
+function resetCounts!(spn::SumProductNetwork)
+    for node in spn.order
+        if typeof(node) == SumNode
+            resetCounts!(node)
+        end
+    end
+end
