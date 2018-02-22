@@ -6,6 +6,15 @@ using StatsBase
 
 """
 Learns the parameters of an SPN using hard EM.
+
+## Arguments
+* `spn::SumProductNetwork`
+* `x::AbstractMatrix`
+
+## Keyword Arguments
+* `iterations`
+* `batchsize`
+
 """
 function parameterLearnHardEM!(spn::SumProductNetwork, x::AbstractMatrix; iterations=30, batchsize=size(x,1))
 	n, d = size(x)

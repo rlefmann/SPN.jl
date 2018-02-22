@@ -13,4 +13,7 @@ export marginalInference!, conditionalInference!, mpeInference!
 include("utils.jl")
 export addExp
 
+include("learn/parameter.jl")
+export parameterLearnHardEM!
+
 end # module
