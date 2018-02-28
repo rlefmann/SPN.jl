@@ -16,4 +16,7 @@ export addExp
 include("learn/parameter.jl")
 export parameterLearnHardEM!
 
+include("learn/poon.jl")
+export structureLearnPoon
+
 end # module
