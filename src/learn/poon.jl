@@ -272,6 +272,7 @@ function structureLearnPoon(width::Int, height::Int, baseres::Int, nsum::Int)
 
     print("Generating SPN ...")
     generateSPN!(rs, ps)
+    println("done")    
     
     rootid = regionID(0, ps.width, 0, ps.height, ps)
     r = rs[rootid]
