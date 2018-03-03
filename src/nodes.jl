@@ -286,6 +286,13 @@ function Base.show(io::IO, i::IndicatorNode)
 end
 
 
+"""
+Display a Gaussian node.
+"""
+function Base.show(io::IO, g::GaussianNode)
+   print(io, "$(typeof(g))(parents=$(length(g.parents)), scope=$(g.scope[1]), μ=$(g.μ), σ=$(g.σ), logval=$(g.logval))") 
+end
+
 
 ################################################################
 # EVALUATING NODES
