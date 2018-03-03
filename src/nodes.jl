@@ -329,13 +329,31 @@ end
 
 
 """
-    eval!(i::IndicatorNode) -> Float64
+    setInput!(g::GaussianNode, x::AbstractVector, e::BitVector)
 
-Returns the log value of the indicator node `i` on the current input.
+Sets the logval of the Gaussian node `g` according to the input `x`.
+The bitvector `e` represents which values are in the evidence
+and which are unknown.
+"""
+function setInput!(g::GaussianNode, x::AbstractVector, e::BitVector=trues(length(x)))
+    idx = g.scope[1]  # get the column index of the variable g represents
+    @assert length(x) >= idx
+    if e[idx] == false  # variable not in evidence
+        g.logval = 0.0
+    else
+        g.logval = logpdf(g.distr, x[idx])  # evaluate Gaussian
+    end
+end    
+
+
+"""
+    eval!(l::LeafNode) -> Float64
+
+Returns the log value of the leaf node `l` on the current input.
 The logval is already computed by `setInput!`.
 """
-function eval!(i::IndicatorNode)
-    return i.logval
+function eval!(l::LeafNode)
+    return l.logval
 end
 
 
