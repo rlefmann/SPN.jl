@@ -1,3 +1,6 @@
+# for GaussianNode:
+using Distributions
+
 ################################################################
 # STATE OF A NODE
 ################################################################
@@ -183,6 +186,49 @@ Creates a new indicator node for a random variable with boolean values.
 """
 IndicatorNode(varidx::Int, indicates::Bool) = IndicatorNode(varidx, float(indicates))
 
+
+"""
+A `GaussianNode` represents a univariate Gaussian distribution.
+"""
+mutable struct GaussianNode <: LeafNode
+    "the log-likelihood value of this node."
+    logval::Float64
+    "The log-derivative value of this node."
+    logdrv::Float64
+    "The node can have a state. Necessary for graph traversals."
+    state::State
+
+    "The parent nodes of this node."
+    parents::Vector{InnerNode}
+    "the scope of this node."
+    scope::Vector{Int}
+
+    "The mean of the Gaussian."
+    μ::Float64
+    "The standard deviation of the Gaussian"
+    σ::Float64
+    "The distribution object that defines the Gaussian."
+    distr::Distributions.Normal{Float64}
+end
+
+
+"""
+    GaussianNode(varidx::Int, μ::Float64, σ::Float64) -> GaussianNode
+
+Creates a new Gaussian node.
+"""
+function GaussianNode(varidx::Int, μ::Float64, σ::Float64)
+    @assert varidx > 0
+
+    logval = -Inf
+    logdrv = -Inf
+    state = unmarked
+    parents = InnerNode[]
+    scope = Int[varidx]
+    distr = Normal(μ,σ)
+
+    GaussianNode(logval,logdrv,state,parents,scope,μ,σ,distr)
+end
 
 
 ################################################################
