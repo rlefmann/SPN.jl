@@ -11,6 +11,8 @@ mutable struct PoonParameters
     baseres::Int
     "number of nodes that represent each region"
     nsum::Int
+    "number of leaf nodes that represent each unit region."
+    nleaf::Int
 end 
 
 
@@ -53,15 +55,18 @@ mutable struct Region
     decompositions::Vector{Decomposition}
     decomposed::Bool
 
-    "each region has a set of sum nodes"
-    nodes::Vector{SumNode}
+    """
+    Each region is represented by a set of sum nodes.
+    Single pixel regions are represented by leaf nodes instead.
+    """
+    nodes::Vector{Node}
 
     """
     Creates a new Region object.
     """
     function Region(a1::Int, a2::Int, b1::Int, b2::Int)
         decompositions = Vector{Decomposition}()
-        new(a1,a2,b1,b2,decompositions,false,SumNode[])
+        new(a1,a2,b1,b2,decompositions,false,Node[])
     end
 end
 
@@ -200,8 +205,8 @@ function generateSPN!(regions::Dict{Int,Region}, ps::PoonParameters)
             push!(r.nodes, SumNode())
         elseif isUnitRegion(r)
             # TODO: create Gaussian leaf node
-            for _ in 1:ps.nsum
-                push!(r.nodes, SumNode())
+            for _ in 1:ps.nleaf
+                push!(r.nodes, GaussianNode(1, 0.0, 1.0))
             end
         else
             for _ in 1:ps.nsum
@@ -263,8 +268,8 @@ end
 Creates a SPN with the architecture suggested in
 Poon and Domingos - Sum-Product Networks: A new deep architecture.
 """
-function structureLearnPoon(width::Int, height::Int, baseres::Int, nsum::Int)
-    ps = PoonParameters(width, height, baseres, nsum)
+function structureLearnPoon(x::AbstractMatrix, width::Int, height::Int, baseres::Int, nsum::Int, nleaf::Int)
+    ps = PoonParameters(width, height, baseres, nsum, nleaf)
     
     print("Generating decompositions ... ")
     rs = generateRegionGraph!(ps)
