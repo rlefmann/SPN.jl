@@ -197,7 +197,6 @@ to regions and product nodes to decompositions.
 * `nsum::Int`: number of sum nodes per region
 """
 function generateSPN!(regions::Dict{Int,Region}, ps::PoonParameters)
-
     # first phase. Generate sum nodes:
     for r in values(regions)
         if isRootRegion(r, ps)
@@ -223,8 +222,8 @@ function generateSPN!(regions::Dict{Int,Region}, ps::PoonParameters)
             # get nodes from decomposition:
             r1 = regions[d.r1_id]
             r2 = regions[d.r2_id]
-            for i in 1:ps.nsum
-                for j in 1:ps.nsum
+            for i in 1:length(r1.nodes)#ps.nsum
+                for j in 1:length(r2.nodes)
                     p = ProdNode()
                     # add as a child to all of r's sum nodes:
                     for node in r.nodes
@@ -275,9 +274,7 @@ function structureLearnPoon(x::AbstractMatrix, width::Int, height::Int; baseres:
     nsum > 0 || throw(DomainError())
     nleaf > 0 || throw(DomainError())
     baseres > 0 || throw(DomainError())
-
-    d = size(x,2)
-    width * height == d || throw(DomainError())
+    width * height == size(x,2) || throw(DomainError())
     width % baseres == 0 || throw(DomainError())
     height % baseres == 0 || throw(DomainError())
 
@@ -294,5 +291,5 @@ function structureLearnPoon(x::AbstractMatrix, width::Int, height::Int; baseres:
     rootid = regionID(0, ps.width, 0, ps.height, ps)
     r = rs[rootid]
     
-    return r.nodes[1]  # return the root node of the SPN
+    return SumProductNetwork(r.nodes[1])  # turn the root node into an SPN
 end
