@@ -114,98 +114,102 @@ spn = structureLearnPoon(x, h, w, nsum=nsum, nleaf=nleaf, baseres=1)
 @test numProdNodes(spn) == expectedNumProdNodes(h,w,nsum,nleaf)
 @test numLeafNodes(spn) == expectedNumLeafNodes(h,w,nleaf)
 
-#=
-function numRegions(m::Int, n::Int, baseres::Int)
-	coarse_m = m÷baseres
-	coarse_n = n÷baseres
-	numCoarse = numSubRects(coarse_m, coarse_n)
-	# number of coarse unit regions:
-	numCoarseBase = coarse_m * coarse_n
-	numSubRectsPerCoarseBase = numSubRects(baseres, baseres)
-	numFine = numCoarseBase * (numSubRectsPerCoarseBase - 1)  # -1, because we would otherwise count the coarse unit rectangles twice
 
+
+################################################################
+# TEST FUNCTIONS FOR NUMBER OF NODES (INCL. COARSE REGIONS)
+################################################################
+
+function expectedNumRegions(m::Int, n::Int, baseres::Int)
+	# coarse regions:
+	cm = m ÷ baseres
+	cn = n ÷ baseres
+	# don't count coarse unit regions:
+	numCoarse = expectedNumRegions(cm, cn) - cm*cn
+	# fine regions:
+	numFine = cm*cn * expectedNumRegions(baseres, baseres)
 	return numCoarse + numFine
 end
-=#
 
 
-
-
-#=
-function numDecompositions(m, n)
-	nd = 0
-	for i in 1:m, j in 1:n
-		nd += (m+1-i)*(n+1-j)*(i+j-2)
-	end
-	return nd
+function expectedNumDecompositions(m::Int, n::Int, baseres::Int)
+	cm = m ÷ baseres
+	cn = n ÷ baseres
+	numCoarse = expectedNumDecompositions(cm, cn)
+	numFine = cm * cn * expectedNumDecompositions(baseres, baseres)
+	return numCoarse + numFine
 end
 
 
-function numSumNodes(m::Int, n::Int, baseres::Int, nsum::Int)
-	nr = numRegions(m, n, baseres)
-	return (nr-1)*nsum + 1
+function expectedNumLeafNodes(m::Int, n::Int, nleaf::Int, baseres::Int)
+	return m*n*nleaf
+end
+
+
+function expectedNumSumNodes(m::Int, n::Int, nsum::Int, baseres::Int)
+	cm = m ÷ baseres
+	cn = n ÷ baseres
+	numCoarse = expectedNumSumNodes(cm, cn, nsum)
+	# the (+numsum-1) part takes into account that for
+	# the fine decomposition the root region is represented
+	# by nsum sum nodes instead of by a single sum node.
+	numFine = cm * cn * (expectedNumSumNodes(baseres, baseres, nsum) + nsum - 1)
+	return numCoarse + numFine
+end
+
+
+function expectedNumProdNodes(m::Int, n::Int, nsum::Int, nleaf::Int, baseres::Int)
+	cm = m ÷ baseres
+	cn = n ÷ baseres
+	numCoarse = expectedNumDecompositions(cm, cn)*nsum^2
+	numFine = cm * cn * expectedNumProdNodes(baseres, baseres, nsum, nleaf)
+	return numCoarse + numFine
+end
+
+
+function expectedNumNodes(m::Int, n::Int, nsum::Int, nleaf::Int, baseres::Int)
+	return expectedNumLeafNodes(m,n,nleaf,baseres) + expectedNumSumNodes(m,n,nsum,baseres) + expectedNumProdNodes(m,n,nsum,nleaf,baseres)
 end
 
 
 
+################################################################
+# TESTS FOR THE FUNCTIONS ABOVE
+################################################################
 
-"""
+h=4
+w=6
+b=2
+s=2
+l=4
 
-The Poon architecture has `nsum` sum nodes for every subrectangle.
-Only the full rectangle (base region) is represented by just one sum node.
-"""
-function numSumNodesBaseres1(w, h, nsum)
-	nsr = numSubRects(h,w)
-	return (nsr-1)*nsum + 1
-end
-
-
-"""
-A ixj rectangle can be decomposed in i+j-2 ways.
-There are therefore
-
-\sum_{i=1}^w \sum_{j=1}^h (w+1-i)*(h+1-j)*(i+j-2)
-
-decompositions of subrectangles.
-Each decomposition is represented by nsum^2 product nodes.
-"""
-function numProdNodesBaseres1(w, h, nsum)
-	numDecompositions = 0
-	for i in 1:w, j in 1:h
-		numDecompositions += (w+1-i)*(h+1-j)*(i+j-2)
-	end
-	return numDecompositions * nsum^2
-end
-=#
+@test expectedNumRegions(h, w, b) == (18-6) + 6*9
+@test expectedNumDecompositions(h, w, b) == 18 + 6*6
+@test expectedNumLeafNodes(h, w, l, b) == 96
+@test expectedNumSumNodes(h, w, s, b) == (1 + 11*2) + 6*(5*2)
+@test expectedNumProdNodes(h, w, s, l, b) == 18*s^2 + 6*(2*s^2+4*l^2)
+@test expectedNumNodes(h, w, s, l, b) == 96 + 23 + 60 + 72 + 432
 
 
-#=
 
+################################################################
+# TESTING POON ARCHITECTURE SPN WITH BASERES=2
+################################################################
 
-w=2
-h=2
-nsum=
-spn = structureLearnPoon(x, w, h)
-expectedNumNodes = numSumNodesBaseres1(w, h, nsum) + numProdNodesBaseres1(width, height, nsum)
-@test length(spn) == 
-=#
+# a "dataset" with 10 data points of dimension 24:
+x = reshape(1:240, :, 24)
+n,d = size(x)
 
-#=
-s = structureLearnPoon(width, height, baseres, nsum, nleaf)
-spn = SumProductNetwork(s)
-
-expectedNumNodes = numSumNodesBaseres1(width, height, nsum) + numProdNodesBaseres1(width, height, nsum)
-@test length(spn) == expectedNumNodes
-
-width = 2
-height = 2
-baseres = 1
-nsum = 5
+h = 4
+w = 6
+nsum = 2
 nleaf = 4
+b = 2
 
-s = structureLearnPoon(width, height, baseres, nsum, nleaf)
-spn = SumProductNetwork(s)
+spn = structureLearnPoon(x, h, w, nsum=nsum, nleaf=nleaf, baseres=b)
 
-expectedNumNodes = numSumNodesBaseres1(width, height, nsum) + numProdNodesBaseres1(width, height, nsum)
-@test length(spn) == expectedNumNodes
-=#
+@test length(spn) == expectedNumNodes(h,w,nsum,nleaf,b)
+@test numNodes(spn) == expectedNumNodes(h,w,nsum,nleaf,b)
+@test numSumNodes(spn) == expectedNumSumNodes(h,w,nsum,b)
+@test numProdNodes(spn) == expectedNumProdNodes(h,w,nsum,nleaf,b)
+@test numLeafNodes(spn) == expectedNumLeafNodes(h,w,nleaf,b)
