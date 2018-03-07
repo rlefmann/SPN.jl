@@ -267,7 +267,7 @@ end
 Creates a SPN with the architecture suggested in
 Poon and Domingos - Sum-Product Networks: A new deep architecture.
 """
-function structureLearnPoon(x::AbstractMatrix, width::Int, height::Int; baseres::Int=1, nsum::Int=5, nleaf::Int=4)
+function structureLearnPoon(x::AbstractMatrix, height::Int, width::Int; baseres::Int=1, nsum::Int=5, nleaf::Int=4)
     # Test validity of arguments:
     width > 0 || throw(DomainError())
     height > 0 || throw(DomainError())
