@@ -28,13 +28,13 @@ n,d = size(x)
 """
 A (m x n) rectangle has m*(m+1)*n*(n+1)/4 subrectangles.
 """
-function numRegions(m::Int, n::Int)
+function expectedNumRegions(m::Int, n::Int)
 	nsr = m*(m+1)*n*(n+1)/4
 	return Int(nsr)
 end
 
 
-function numDecompositions(m::Int, n::Int)
+function expectedNumDecompositions(m::Int, n::Int)
 	nd = 0
 	for i in 1:m, j in 1:n
 		nd += (m+1-i)*(n+1-j)*(i+j-2)
@@ -43,17 +43,17 @@ function numDecompositions(m::Int, n::Int)
 end
 
 
-function numLeafNodes(m::Int, n::Int, nleaf::Int)
+function expectedNumLeafNodes(m::Int, n::Int, nleaf::Int)
 	return m*n*nleaf
 end
 
 
-function numSumNodes(m::Int, n::Int, nsum::Int)
-	return (numRegions(m,n)-m*n-1)*nsum + 1
+function expectedNumSumNodes(m::Int, n::Int, nsum::Int)
+	return (expectedNumRegions(m,n)-m*n-1)*nsum + 1
 end
 
 
-function numProdNodes(m::Int, n::Int, nsum::Int, nleaf::Int)
+function expectedNumProdNodes(m::Int, n::Int, nsum::Int, nleaf::Int)
 	# compute p1:
 	p1 = 2*m*n - m - n
 
@@ -77,8 +77,8 @@ function numProdNodes(m::Int, n::Int, nsum::Int, nleaf::Int)
 end
 
 
-function numNodes(m::Int, n::Int, nsum::Int, nleaf::Int)
-	return numLeafNodes(m,n,nleaf) + numSumNodes(m,n,nsum) + numProdNodes(m,n,nsum,nleaf)
+function expectedNumNodes(m::Int, n::Int, nsum::Int, nleaf::Int)
+	return expectedNumLeafNodes(m,n,nleaf) + expectedNumSumNodes(m,n,nsum) + expectedNumProdNodes(m,n,nsum,nleaf)
 end
 
 
@@ -87,12 +87,12 @@ end
 # TESTS FOR THE FUNCTIONS ABOVE
 ################################################################
 
-@test numRegions(3,2) == 18
-@test numDecompositions(3,2) == 18
-@test numLeafNodes(3,2,4) == 24
-@test numSumNodes(3,2,2) == 23
-@test numProdNodes(3,2,2,4) == 172
-@test numNodes(3,2,2,4) == 219
+@test expectedNumRegions(3,2) == 18
+@test expectedNumDecompositions(3,2) == 18
+@test expectedNumLeafNodes(3,2,4) == 24
+@test expectedNumSumNodes(3,2,2) == 23
+@test expectedNumProdNodes(3,2,2,4) == 172
+@test expectedNumNodes(3,2,2,4) == 219
 
 
 
@@ -108,8 +108,11 @@ baseres = 1
 
 spn = structureLearnPoon(x, h, w, nsum=nsum, nleaf=nleaf, baseres=1)
 
-@test length(spn) == numNodes(h,w,nsum,nleaf)
-
+@test length(spn) == expectedNumNodes(h,w,nsum,nleaf)
+@test numNodes(spn) == expectedNumNodes(h,w,nsum,nleaf)
+@test numSumNodes(spn) == expectedNumSumNodes(h,w,nsum)
+@test numProdNodes(spn) == expectedNumProdNodes(h,w,nsum,nleaf)
+@test numLeafNodes(spn) == expectedNumLeafNodes(h,w,nleaf)
 
 #=
 function numRegions(m::Int, n::Int, baseres::Int)
