@@ -118,9 +118,24 @@ function test_normalize()
 end
 
 
+function test_number_of_nodes()
+    s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
+    spn = SumProductNetwork(s, recursive=false)
+
+    @test numNodes(spn) == 12
+    @test length(spn) == 12
+    @test numSumNodes(spn) == 5
+    @test numProdNodes(spn) == 3
+    @test numLeafNodes(spn) == 4
+    @test numNodes(spn, IndicatorNode) == 4
+    @test numNodes(spn, GaussianNode) == 0
+end
+
+
 test_compute_order_recursive()
 test_compute_order_stack()
 test_compute_order_recursive_cycles()
 test_eval()
 test_computeDerivatives()
 test_normalize()
+test_number_of_nodes()
