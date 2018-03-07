@@ -268,7 +268,7 @@ end
 Creates a SPN with the architecture suggested in
 Poon and Domingos - Sum-Product Networks: A new deep architecture.
 """
-function structureLearnPoon(x::AbstractMatrix, width::Int, height::Int, baseres::Int, nsum::Int, nleaf::Int)
+function structureLearnPoon(x::AbstractMatrix, width::Int, height::Int; baseres::Int=1, nsum::Int=5, nleaf::Int=4)
     ps = PoonParameters(width, height, baseres, nsum, nleaf)
     
     print("Generating decompositions ... ")
