@@ -246,6 +246,64 @@ function computeDerivatives!(spn::SumProductNetwork)
 end
 
 
+"""
+   numNodes(spn::SumProductNetwork) -> Int
+
+The total number of nodes in the SPN. 
+"""
+function numNodes(spn::SumProductNetwork)
+    return length(spn.order)
+end
+
+
+"""
+   numSumNodes(spn::SumProductNetwork) -> Int
+
+The number of sum nodes in the SPN.
+"""
+function numSumNodes(spn::SumProductNetwork)
+    return numNodes(spn, SumNode)
+end
+
+
+"""
+   numProdNodes(spn::SumProductNetwork) -> Int
+
+The number of product nodes in the SPN.
+"""
+function numProdNodes(spn::SumProductNetwork)
+    return numNodes(spn, ProdNode)
+end
+
+
+"""
+   numLeafNodes(spn::SumProductNetwork) -> Int
+
+The number of leaf nodes in the SPN.
+"""
+function numLeafNodes(spn::SumProductNetwork)
+    return numNodes(spn, LeafNode)
+end
+
+
+"""
+    numNodes(spn::SumProductNetwork, t::Type) -> Int
+
+The number of nodes in the SPN that are of type `t`. 
+The type `t` can be concrete or abstract. In the latter case the number
+of nodes that are of a subtype of `t` are counted.
+"""
+function numNodes(spn::SumProductNetwork, t::Type{T}) where T <: Node
+    cnt = 0
+    for node in spn.order
+        if typeof(node) <: t
+            cnt += 1
+        end
+    end
+    return cnt
+end
+
+
 
 """
 Display a SumProductNetwork object.
@@ -259,7 +317,7 @@ end
 The number of nodes of the SumProductNetwork.
 """
 function Base.length(spn::SumProductNetwork)
-    return length(spn.order)
+    return numNodes(spn)
 end
 
 

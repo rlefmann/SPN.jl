@@ -6,6 +6,7 @@ export connect!, setInput!, eval!, passDerivative!
 
 include("network.jl")
 export SumProductNetwork, computeDerivatives!
+export numNodes, numSumNodes, numProdNodes, numLeafNodes
 
 include("inference.jl")
 export marginalInference!, conditionalInference!, mpeInference!
