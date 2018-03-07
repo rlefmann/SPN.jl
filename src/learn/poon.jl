@@ -263,12 +263,24 @@ end
 
 
 """
-    generatePoonStructure() -> SumNode
+    generatePoonStructure() -> SumProductNetwork
 
 Creates a SPN with the architecture suggested in
 Poon and Domingos - Sum-Product Networks: A new deep architecture.
 """
 function structureLearnPoon(x::AbstractMatrix, width::Int, height::Int; baseres::Int=1, nsum::Int=5, nleaf::Int=4)
+    # Test validity of arguments:
+    width > 0 || throw(DomainError())
+    height > 0 || throw(DomainError())
+    nsum > 0 || throw(DomainError())
+    nleaf > 0 || throw(DomainError())
+    baseres > 0 || throw(DomainError())
+
+    d = size(x,2)
+    width * height == d || throw(DomainError())
+    width % baseres == 0 || throw(DomainError())
+    height % baseres == 0 || throw(DomainError())
+
     ps = PoonParameters(width, height, baseres, nsum, nleaf)
     
     print("Generating decompositions ... ")
