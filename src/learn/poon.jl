@@ -196,16 +196,20 @@ to regions and product nodes to decompositions.
 * `regions::Dict{Int,Region}`: region graph
 * `nsum::Int`: number of sum nodes per region
 """
-function generateSPN!(regions::Dict{Int,Region}, ps::PoonParameters)
+function generateSPN!(x::AbstractMatrix, regions::Dict{Int,Region}, ps::PoonParameters)
     # first phase. Generate sum nodes:
     for r in values(regions)
         if isRootRegion(r, ps)
             # node is root, create only one sum node:
             push!(r.nodes, SumNode())
         elseif isUnitRegion(r)
-            # TODO: create Gaussian leaf node
-            for _ in 1:ps.nleaf
-                push!(r.nodes, GaussianNode(1, 0.0, 1.0))
+            # get variable index from region position (assumption: variables are arranged row-wise):
+            varidx = r.b1 * ps.width + r.a1 + 1
+            # obtain quantile means for current variable:
+            means = quantileMeans(x[:,varidx], ps.nleaf)
+            for i in 1:ps.nleaf
+                g = GaussianNode(varidx, means[i], 1.0)
+                push!(r.nodes, g)
             end
         else
             for _ in 1:ps.nsum
@@ -285,7 +289,7 @@ function structureLearnPoon(x::AbstractMatrix, height::Int, width::Int; baseres:
     println("done")
 
     print("Generating SPN ...")
-    generateSPN!(rs, ps)
+    generateSPN!(x, rs, ps)
     println("done")    
     
     rootid = regionID(0, ps.width, 0, ps.height, ps)
