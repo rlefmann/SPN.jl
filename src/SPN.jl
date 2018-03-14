@@ -12,7 +12,7 @@ include("inference.jl")
 export marginalInference!, conditionalInference!, mpeInference!
 
 include("utils.jl")
-export addExp
+export addExp, quantileMeans
 
 include("learn/parameter.jl")
 export parameterLearnHardEM!
