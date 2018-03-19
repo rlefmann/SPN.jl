@@ -31,3 +31,20 @@ function quantileMeans(x::AbstractVector, n::Integer)
     end
     return means
 end
+
+
+"""
+    dataLikelihood!(spn::SumProductNetwork, x::AbstractMatrix) -> Float64
+
+Computes the log-likelihood of the data `x` given the current SPN model.
+"""
+function dataLikelihood!(spn::SumProductNetwork, x::AbstractMatrix)
+    llh = 0.0
+    for i in 1:size(x,1)
+        xi = vec(x[i,:])
+        setInput!(spn, xi)
+        llhi = eval!(spn)
+        llh += llhi
+    end
+    return llh
+end
