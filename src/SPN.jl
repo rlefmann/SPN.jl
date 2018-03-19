@@ -12,10 +12,10 @@ include("inference.jl")
 export marginalInference!, conditionalInference!, mpeInference!
 
 include("utils.jl")
-export addExp, quantileMeans
+export addExp, quantileMeans, dataLikelihood!
 
 include("learn/parameter.jl")
-export parameterLearnHardEM!
+export parameterLearnHardEM!, parameterLearnEM!
 
 include("learn/poon.jl")
 export structureLearnPoon
