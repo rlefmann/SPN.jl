@@ -391,29 +391,25 @@ function eval!(s::SumNode; max::Bool=false)
     childvalues = [child.logval for child in s.children]
     numChildren = length(childvalues)
 
-    if max == false
-        sum_val = 0.0
-        for (w, cval) in zip(s.weights, childvalues)
-            weighted_cval = exp(cval + log(w))
-            sum_val += weighted_cval
+    sum_val = 0.0
+    max_val = -Inf  # the maximum weighted childvalue
+    max_idx = -1
+    for (w, cval, idx) in zip(s.weights, childvalues, 1:numChildren)
+        weighted_cval = cval + log(w)
+        sum_val += exp(weighted_cval)
+        if weighted_cval > max_val
+            max_val = weighted_cval
+            max_idx = idx
         end
-        s.logval = log(sum_val)
-
-    else  # max == true
-
-        max_val = -Inf
-        max_idx = -1
-        for (w, cval, idx) in zip(s.weights, childvalues, 1:numChildren)
-            weighted_cval = cval + log(w)
-            if weighted_cval > max_val
-                max_val = weighted_cval
-                max_idx = idx
-            end
-        end
-        s.logval = max_val
-        s.maxidx = max_idx
     end
-        
+
+    if max == false
+        s.logval = log(sum_val)
+    else
+        s.logval = max_val
+    end
+    s.maxidx = max_idx
+
     return s.logval
 end
 
