@@ -96,6 +96,8 @@ mutable struct SumNode <: InnerNode
 	logval::Float64
     "The log-derivative value of this node."
     logdrv::Float64
+    "The index of the child with highest weighted value. Necessary for MPE inference."
+    maxidx::Int
     "The node can have a state. Necessary for graph traversals."
     state::State
 
@@ -119,6 +121,7 @@ Creates a new sum node.
 function SumNode()
 	logval = -Inf  # The default logval is log(0)=-Inf
     logdrv = -Inf  # The default logdrv is log(0)=-Inf
+    maxidx = -1
     state = unmarked
 	parents = InnerNode[]
 	children = Node[]
@@ -127,7 +130,7 @@ function SumNode()
 	weights = Float64[]
     counts = Float64[]
 
-	SumNode(logval, logdrv, state, parents, children, scope, weights, counts)
+	SumNode(logval, logdrv, maxidx, state, parents, children, scope, weights, counts)
 end
 
 
@@ -347,25 +350,25 @@ end
 
 
 """
-    eval!(l::LeafNode) -> Float64
+    eval!(l::LeafNode; max::Bool=false; max::Bool=false) -> Float64
 
 Returns the log value of the leaf node `l` on the current input.
 The logval is already computed by `setInput!`.
 """
-function eval!(l::LeafNode)
+function eval!(l::LeafNode; max::Bool=false)
     return l.logval
 end
 
 
 """
-    eval!(p::ProdNode) -> Float64
+    eval!(p::ProdNode; max::Bool=false) -> Float64
 
 Computes the log value of the product node `p` on the current input.
 
 The value of a product node is the product of the values of its children.
 Therefore, the log value is the sum of the log values of its children.
 """
-function eval!(p::ProdNode)
+function eval!(p::ProdNode; max::Bool=false)
     childvalues = [child.logval for child in p.children]
     p.logval = sum(childvalues)
     return p.logval
@@ -373,27 +376,47 @@ end
 
 
 """
-    eval!(s::SumNode) -> Float64
+    eval!(s::SumNode; max::Bool=false) -> Float64
 
-Computes the log value of the sum node `s` on the current input.
+Compute the log value of the sum node `s` on the current input.
 
 The value of a sum node is the sum of the values of its children.
 In log-space this looks a lot more ugly:
 log(S_i) = log(sum_j w_ij S_j) = log(sum_j exp(log(w_ij)) * exp(log(S_j)))
-= log(sum_j exp(log(w_ij) + log(S_j))
+= log(sum_j exp(log(w_ij) + log(S_j)).
+If the keyword argument `max` is set to true the value of the sum node is its maximum weighted child value.
+In log-space this means max(log(w_ij) + s_j).
 """
-function eval!(s::SumNode)
+function eval!(s::SumNode; max::Bool=false)
     childvalues = [child.logval for child in s.children]
+    numChildren = length(childvalues)
 
-    sum_val = 0.0
-    for (w, cval) in zip(s.weights, childvalues)
-        weighted_cval = exp(cval + log(w))
-        sum_val += weighted_cval
+    if max == false
+        sum_val = 0.0
+        for (w, cval) in zip(s.weights, childvalues)
+            weighted_cval = exp(cval + log(w))
+            sum_val += weighted_cval
+        end
+        s.logval = log(sum_val)
+
+    else  # max == true
+
+        max_val = -Inf
+        max_idx = -1
+        for (w, cval, idx) in zip(s.weights, childvalues, 1:numChildren)
+            weighted_cval = cval + log(w)
+            if weighted_cval > max_val
+                max_val = weighted_cval
+                max_idx = idx
+            end
+        end
+        s.logval = max_val
+        s.maxidx = max_idx
     end
-    
-    s.logval = log(sum_val)
+        
     return s.logval
 end
+
 
 
 

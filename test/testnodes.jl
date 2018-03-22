@@ -141,6 +141,56 @@ function test_eval_inner_nodes()
 end
 
 
+"""
+Test the evaluation with the max keyword argument set to true.
+Every sum node becomes a max node whose value is its maximum weighted child value.
+"""
+function test_eval_max()
+	s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
+	
+	x = [true, false]
+	e = BitVector([true, false])  # we only know the state of the first variable
+
+	# Calculate value of nodes manually (not in logspace):
+	s1_val = 0.6
+	s1_idx = 1
+	s2_val = 0.9
+	s2_idx = 1
+	s3_val = 0.7
+	s3_idx = 2
+	s4_val = 0.8
+	s4_idx = 2
+	p1_val = s1_val*s3_val
+	p2_val = s1_val*s4_val
+	p3_val = s2_val*s4_val
+	s_val = 0.3*p3_val
+	s_idx = 3
+
+	setInput!(i1, x, e)
+	setInput!(i2, x, e)
+	setInput!(i3, x, e)
+	setInput!(i4, x, e)
+
+	@test eval!(i1, max=true) ≈ log(1)
+	@test eval!(i2, max=true) ≈ log(0)
+	@test eval!(i3, max=true) ≈ log(1)
+	@test eval!(i4, max=true) ≈ log(1)
+	@test eval!(s1, max=true) ≈ log(s1_val)
+	@test eval!(s2, max=true) ≈ log(s2_val)
+	@test eval!(s3, max=true) ≈ log(s3_val)
+	@test eval!(s4, max=true) ≈ log(s4_val)
+	@test eval!(p1, max=true) ≈ log(p1_val)
+	@test eval!(p2, max=true) ≈ log(p2_val)
+	@test eval!(p3, max=true) ≈ log(p3_val)
+	@test eval!(s, max=true) ≈ log(s_val)
+	@test s1.maxidx == s1_idx
+	@test s2.maxidx == s2_idx
+	@test s3.maxidx == s3_idx
+	@test s4.maxidx == s4_idx
+	@test s.maxidx == s_idx
+end
+
+
 function test_normalize()
 	s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
 	s.weights *= 3
@@ -162,4 +212,5 @@ test_connect_nodes()
 test_setinput_indicator_node()
 test_setinput_indicator_node_partial_evidence()
 test_eval_inner_nodes()
+test_eval_max()
 test_normalize()
