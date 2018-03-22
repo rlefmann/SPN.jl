@@ -87,6 +87,8 @@ function parameterLearnEM!(spn::SumProductNetwork, x::AbstractMatrix; iterations
 	# normalize all sum nodes:
 	normalize!(spn)
 
+	llhvals = Vector{Float64}(iterations)
+
 	for t in 1:iterations
 
 		# set counts of all sum nodes to 0.0:
@@ -118,8 +120,11 @@ function parameterLearnEM!(spn::SumProductNetwork, x::AbstractMatrix; iterations
 			end
 		end
 
-		@show dataLikelihood!(spn, x)
+		llhvals[t] = dataLikelihood!(spn, x)
+		@printf "iteration %d:\t llh=%d\n" t llhvals[t]
 	end
+
+	return llhvals
 end
 
 
