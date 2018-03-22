@@ -22,6 +22,8 @@ function parameterLearnHardEM!(spn::SumProductNetwork, x::AbstractMatrix; iterat
 	# normalize all sum nodes:
 	normalize!(spn)
 
+	llhvals = Vector{Float64}(iterations)
+
 	for t in 1:iterations
 		# set counts of all sum nodes to 0.0:
 		resetCounts!(spn)
@@ -31,12 +33,10 @@ function parameterLearnHardEM!(spn::SumProductNetwork, x::AbstractMatrix; iterat
 		for i in indices
 			xi = vec(x[i,:])  # get datapoint
 			setInput!(spn, xi)
-			#initDerivatives!(spn)
 			eval!(spn)
-			#computeDerivatives!(spn)
 
 			for node in spn.order
-				if typeof(node) == SumNode
+				if isa(node, SumNode)
 
 					iMax = -1
 					rMax = -Inf
@@ -58,14 +58,17 @@ function parameterLearnHardEM!(spn::SumProductNetwork, x::AbstractMatrix; iterat
 
 		# set weights according to counts:
 		for node in spn.order
-			if typeof(node) == SumNode
+			if isa(node, SumNode)
 				node.weights = node.counts
                 normalize!(node)
 			end
 		end
 
-		@show dataLikelihood!(spn, x)
+		llhvals[t] = dataLikelihood!(spn, x)
+		@printf "iteration %d:\t llh=%d\n" t llhvals[t]
 	end
+
+	return llhvals
 end
 
 
