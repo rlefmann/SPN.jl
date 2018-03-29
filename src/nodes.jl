@@ -406,7 +406,8 @@ function eval!(s::SumNode; max::Bool=false)
     if max == false
         s.logval = log(sum_val)
     else
-        s.logval = max_val
+        #s.logval = max_val
+        s.logval = childvalues[max_idx]   # TODO: is this correct?
     end
     s.maxidx = max_idx
 
