@@ -26,6 +26,7 @@ Every node of an SPN has to be of a subtype of `Node`.
 
 Every subtype of `Node` needs to have the fields (even though Julia does not enforce it):
 
+* `id`: a unique number representing the node. Necessary for evaluation
 * `parents`:  a list of parent nodes
 * `scope`: a list of variables which influence the node
 * `logval`: the current value of the node
@@ -58,6 +59,9 @@ abstract type LeafNode <: Node end
 A product node computes the product of the values of its child nodes.
 """
 mutable struct ProdNode <: InnerNode
+    "The id number of this node."
+    id::Int
+
 	"The log-likelihood value of this node."
 	logval::Float64
     "The log-derivative value of this node."
@@ -77,14 +81,14 @@ end
 """
 Creates a new product node.
 """
-function ProdNode()
+function ProdNode(id::Int=0)
 	logval = -Inf  # The default logval is log(0)=-Inf
     logdrv = -Inf  # The default logdrv is log(0)=-Inf
     state = unmarked
 	parents = InnerNode[]
 	children = Node[]
 	scope = Int[]
-	ProdNode(logval, logdrv, state, parents, children, scope)
+	ProdNode(id, logval, logdrv, state, parents, children, scope)
 end
 
 
@@ -92,6 +96,9 @@ end
 A sum node computes a weighted sum of the values of its child nodes.
 """
 mutable struct SumNode <: InnerNode
+    "The id number of this node."
+    id::Int
+
 	"The log-likelihood value of this node."
 	logval::Float64
     "The log-derivative value of this node."
@@ -118,7 +125,7 @@ end
 """
 Creates a new sum node.
 """
-function SumNode()
+function SumNode(id::Int=0)
 	logval = -Inf  # The default logval is log(0)=-Inf
     logdrv = -Inf  # The default logdrv is log(0)=-Inf
     maxidx = -1
@@ -130,7 +137,7 @@ function SumNode()
 	weights = Float64[]
     counts = Float64[]
 
-	SumNode(logval, logdrv, maxidx, state, parents, children, scope, weights, counts)
+	SumNode(id, logval, logdrv, maxidx, state, parents, children, scope, weights, counts)
 end
 
 
@@ -148,6 +155,9 @@ Otherwise it has a value of 0. The corresponding log-values are
 log(1) = 0 and log(0)=-Inf.
 """
 mutable struct IndicatorNode <: LeafNode
+    "The id number of this node."
+    id::Int
+
     "the log-likelihood value of this node."
     logval::Float64
     "The log-derivative value of this node."
@@ -169,31 +179,34 @@ end
 
 Creates a new indicator node for a random variable with floating point values.
 """
-function IndicatorNode(varidx::Int, indicates::Float64)
+function IndicatorNode(varidx::Int, indicates::Float64, id::Int=0)
 	@assert varidx > 0
     logval = -Inf
     logdrv = -Inf
     state = unmarked
     parents = InnerNode[]
     scope = Int[varidx]
-    IndicatorNode(logval, logdrv, state, parents, scope, indicates)
+    IndicatorNode(id, logval, logdrv, state, parents, scope, indicates)
 end
 
 """
 Creates a new indicator node for a random variable with integer values.
 """
-IndicatorNode(varidx::Int, indicates::Int) = IndicatorNode(varidx, float(indicates))
+IndicatorNode(varidx::Int, indicates::Int, id::Int=0) = IndicatorNode(varidx, float(indicates), id)
 
 """
 Creates a new indicator node for a random variable with boolean values.
 """
-IndicatorNode(varidx::Int, indicates::Bool) = IndicatorNode(varidx, float(indicates))
+IndicatorNode(varidx::Int, indicates::Bool, id::Int=0) = IndicatorNode(varidx, float(indicates), id)
 
 
 """
 A `GaussianNode` represents a univariate Gaussian distribution.
 """
 mutable struct GaussianNode <: LeafNode
+    "The id number of this node."
+    id::Int
+
     "the log-likelihood value of this node."
     logval::Float64
     "The log-derivative value of this node."
@@ -220,7 +233,7 @@ end
 
 Creates a new Gaussian node.
 """
-function GaussianNode(varidx::Int, μ::Float64, σ::Float64)
+function GaussianNode(varidx::Int, μ::Float64, σ::Float64, id::Int=0)
     @assert varidx > 0
 
     logval = -Inf
@@ -230,7 +243,7 @@ function GaussianNode(varidx::Int, μ::Float64, σ::Float64)
     scope = Int[varidx]
     distr = Normal(μ,σ)
 
-    GaussianNode(logval,logdrv,state,parents,scope,μ,σ,distr)
+    GaussianNode(id,logval,logdrv,state,parents,scope,μ,σ,distr)
 end
 
 
