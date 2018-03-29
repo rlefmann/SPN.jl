@@ -210,9 +210,9 @@ end
 Evaluates all nodes of an SPN on the current input. Returns the
 logval of the root node.
 """
-function eval!(spn::SumProductNetwork)
+function eval!(spn::SumProductNetwork; max=false)
     for node in spn.order
-        eval!(node)
+        eval!(node, max=max)
     end
     return spn.root.logval
 end
