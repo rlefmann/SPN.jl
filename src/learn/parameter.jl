@@ -33,11 +33,11 @@ function parameterLearnHardEM!(spn::SumProductNetwork, x::AbstractMatrix; iterat
 		for i in indices
 			xi = vec(x[i,:])  # get datapoint
 			setInput!(spn, xi)
-			eval!(spn)
+			eval!(spn, max=true)
 
 			for node in spn.order
 				if isa(node, SumNode)
-
+					#=
 					iMax = -1
 					rMax = -Inf
 					for cidx in 1:length(node.children)
@@ -52,6 +52,8 @@ function parameterLearnHardEM!(spn::SumProductNetwork, x::AbstractMatrix; iterat
 						continue
 					end
 					node.counts[iMax] += 1.0
+					=#
+					node.counts[node.maxidx] += 1.0
 				end
 			end
 		end
@@ -59,6 +61,8 @@ function parameterLearnHardEM!(spn::SumProductNetwork, x::AbstractMatrix; iterat
 		# set weights according to counts:
 		for node in spn.order
 			if isa(node, SumNode)
+				@assert sum(node.counts) == n
+				println(node.counts)
 				node.weights = node.counts
                 normalize!(node)
 			end
@@ -102,13 +106,13 @@ function parameterLearnEM!(spn::SumProductNetwork, x::AbstractMatrix; iterations
 			xi = vec(x[i,:])  # get datapoint
 			setInput!(spn, xi)
 			initDerivatives!(spn)
-			eval!(spn)
+			eval!(spn, max=true)
 			computeDerivatives!(spn)
 
 			for node in spn.order
 				if typeof(node) == SumNode
 					for cidx in 1:length(node.children)
-						r = exp(node.children[cidx].logval) * node.weights[cidx] / exp(node.logval) * exp(node.logdrv)
+						r = exp(node.children[cidx].logval) * node.weights[cidx]# / exp(node.logval) * exp(node.logdrv)
 						node.counts[cidx] += r
 					end
 				end
@@ -134,5 +138,32 @@ end
 function parameterLearnGD!(spn::SumProductNetwork, x::AbstractMatrix; iterations=30, learnrate=0.1)
 	n,d = size(x)
 
+	# normalize all sum nodes:
+	normalize!(spn)
 
+	llhvals = Vector{Float64}(iterations)
+
+	for t in 1:iterations
+		indices = 1:n
+		for i in indices
+			xi = vec(x[i,:])
+			setInput!(spn, xi)
+			initDerivatives!(spn)
+			eval!(spn)
+			computeDerivatives!(spn)
+
+			for node in spn.order
+				if isa(node, SumNode)
+					for i in 1:length(node.weights)
+						node.weights[i] += learnrate * node.logdrv * node.children[i].logval
+					end
+		            normalize!(node)
+				end
+			end
+				
+		end
+
+		llhvals[t] = dataLikelihood!(spn, x)
+		@printf "iteration %d:\t llh=%f\n" t llhvals[t]
+	end
 end

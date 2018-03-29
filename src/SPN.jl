@@ -15,7 +15,7 @@ include("utils.jl")
 export addExp, quantileMeans, dataLikelihood!
 
 include("learn/parameter.jl")
-export parameterLearnHardEM!, parameterLearnEM!
+export parameterLearnHardEM!, parameterLearnEM!, parameterLearnGD!
 
 include("learn/poon.jl")
 export structureLearnPoon
