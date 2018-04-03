@@ -234,10 +234,10 @@ end
 function eval1!(spn::SumProductNetwork, x::AbstractMatrix)
     n,d = size(x)
     m = numNodes(spn)
-    llhvals = Matrix{Float64}(n,m)
+    llhvals = Matrix{Float64}(m,n)
     # TODO: max evaluation
     for node in spn.order
-        eval1!(node, x, llhvals)
+        eval1!(node, llhvals, x)
     end
     # TODO: what to return?
 end
