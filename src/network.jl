@@ -190,6 +190,19 @@ function computeOrderStack(root::Node)
 end
 =#
 
+
+"""
+    setIDs!(spn::SumProductNetwork)
+
+Set the id field of the nodes of the SPN according to the evluation order.
+"""
+function setIDs!(spn::SumProductNetwork)
+    for i in 1:length(spn.order)
+        spn.order[i].id = i
+    end
+end
+
+
 """
     setInput!(spn::SumProductNetwork, x::AbstractVector, e::BitVector)
 
@@ -216,6 +229,19 @@ function eval!(spn::SumProductNetwork; max=false)
     end
     return spn.root.logval
 end
+
+
+function eval1!(spn::SumProductNetwork, x::AbstractMatrix)
+    n,d = size(x)
+    m = numNodes(spn)
+    llhvals = Matrix{Float64}(n,m)
+    # TODO: max evaluation
+    for node in spn.order
+        eval1!(node, x, llhvals)
+    end
+    # TODO: what to return?
+end
+
 
 
 """
