@@ -381,7 +381,7 @@ function eval1!(i::IndicatorNode, llhvals::Matrix{Float64}, x::AbstractMatrix)
     # set llh values corresponding to this node to -Inf:
     llhvals[i.id,:] = -Inf
     # The indicator node value is log(1)=0 when the variable is not in the evidence:
-    llhvals[i.id, isnan(xvar)] = 0.0
+    llhvals[i.id, isnan.(xvar)] = 0.0
     # If the node indicates the value the variable has, the node value is set to log(1)=0:
     llhvals[i.id, xvar .≈ i.indicates] = 0.0
 end
