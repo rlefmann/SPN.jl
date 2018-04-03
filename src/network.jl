@@ -239,7 +239,7 @@ function eval1!(spn::SumProductNetwork, x::AbstractMatrix)
     for node in spn.order
         eval1!(node, llhvals, x)
     end
-    # TODO: what to return?
+    return vec(llhvals[spn.root.id,:])
 end
 
 
