@@ -142,6 +142,70 @@ end
 
 
 """
+Test matrix evaluation of SPN.
+"""
+function test_eval1()
+	s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
+	spn = SumProductNetwork(s, recursive=false)
+	setIDs!(spn)
+
+	x = float([ true false; false false; false true; true true])
+
+	n,d = size(x)
+    m = numNodes(spn)
+    llhvals = Matrix{Float64}(m,n)
+    for node in spn.order
+        eval1!(node, llhvals, x)
+    end
+
+    # i1 indicates if the first variable is 1. This is the case for datapoints 1 and 4:
+    @test llhvals[i1.id, 1] == 0.0
+    @test llhvals[i1.id, 2] == -Inf
+    @test llhvals[i1.id, 3] == -Inf
+    @test llhvals[i1.id, 4] == 0.0
+
+    # i2 indicates if the first variable is 0. This is the case for datapoints 2 and 3:
+    @test llhvals[i2.id, 1] == -Inf
+    @test llhvals[i2.id, 2] == 0.0
+    @test llhvals[i2.id, 3] == 0.0
+    @test llhvals[i2.id, 4] == -Inf
+
+    # i3 indicates if the second variable is 1. This is the case for datapoints 3 and 4:
+    @test llhvals[i3.id, 1] == -Inf
+    @test llhvals[i3.id, 2] == -Inf
+    @test llhvals[i3.id, 3] == 0.0
+    @test llhvals[i3.id, 4] == 0.0
+
+    # i4 indicates if the second variable is 0. This is the case for datapoints 1 and 2:
+    @test llhvals[i4.id, 1] == 0.0
+    @test llhvals[i4.id, 2] == 0.0
+    @test llhvals[i4.id, 3] == -Inf
+    @test llhvals[i4.id, 4] == -Inf
+
+
+    # Calculate value of nodes for the first datapoint manually (not in logspace):
+	s1_val = 0.6*1+0.4*0
+	s2_val = 0.9*1+0.1*0
+	s3_val = 0.3*0+0.7*1
+	s4_val = 0.2*0+0.8*1
+	p1_val = s1_val*s3_val
+	p2_val = s1_val*s4_val
+	p3_val = s2_val*s4_val
+	s_val = 0.5*p1_val + 0.2*p2_val + 0.3*p3_val
+
+	@test llhvals[s1.id, 1] ≈ log(s1_val)
+	@test llhvals[s2.id, 1] ≈ log(s2_val)
+	@test llhvals[s3.id, 1] ≈ log(s3_val)
+	@test llhvals[s4.id, 1] ≈ log(s4_val)
+
+	@test llhvals[p1.id, 1] ≈ log(p1_val)
+	@test llhvals[p2.id, 1] ≈ log(p2_val)
+	@test llhvals[p3.id, 1] ≈ log(p3_val)
+	@test llhvals[s.id, 1] ≈ log(s_val)
+end
+
+
+"""
 Test the evaluation with the max keyword argument set to true.
 Every sum node becomes a max node whose value is its maximum weighted child value.
 """
@@ -212,5 +276,6 @@ test_connect_nodes()
 test_setinput_indicator_node()
 test_setinput_indicator_node_partial_evidence()
 test_eval_inner_nodes()
-test_eval_max()
+test_eval1()
+# test_eval_max()  # TODO: this needs some work!
 test_normalize()
