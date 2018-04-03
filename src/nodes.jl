@@ -402,6 +402,14 @@ function eval!(p::ProdNode; max::Bool=false)
 end
 
 
+function eval1!(p::ProdNode, llhvals::Matrix{Float64}, x::AbstractMatrix)
+    childids = [child.id for child in p.children]
+    childvalues = llhvals[childids, :]
+    # The log value is the sum of the log values of its children.
+    # We build a sum for each column, i.e. for each datapoint
+    llhvals[p.id, :] = sum(childvalues, 1)
+end
+
 
 """
     eval!(s::SumNode; max::Bool=false) -> Float64
