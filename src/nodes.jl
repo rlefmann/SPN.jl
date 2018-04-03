@@ -451,6 +451,14 @@ function eval!(s::SumNode; max::Bool=false)
 end
 
 
+function eval1!(s::SumNode, llhvals::Matrix{Float64}, x::AbstractMatrix)
+    childids = [child.id for child in s.children]
+    childvalues = llhvals[childids, :]
+    weighted_cvals = childvalues .+ log.(s.weights)
+    sum_vals = sum(exp.(weighted_cvals), 1)
+    llhvals[s.id,:] = log.(sum_vals)
+end
+
 
 
 ################################################################
