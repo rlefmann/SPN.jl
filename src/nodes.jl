@@ -373,6 +373,20 @@ function eval!(l::LeafNode; max::Bool=false)
 end
 
 
+function eval1!(i::IndicatorNode, llhvals::Matrix{Float64}, x::AbstractMatrix)
+    varidx = i.scope[1]
+    @assert size(x, 2) >= varidx
+    # get parts of x and e corresponding to the variable i indicates:
+    xvar = x[:, varidx]
+    # set llh values corresponding to this node to -Inf:
+    llhvals[i.id,:] = -Inf
+    # The indicator node value is log(1)=0 when the variable is not in the evidence:
+    llhvals[i.id, isnan(xvar)] = 0.0
+    # If the node indicates the value the variable has, the node value is set to log(1)=0:
+    llhvals[i.id, xvar .≈ i.indicates] = 0.0
+end
+
+
 """
     eval!(p::ProdNode; max::Bool=false) -> Float64
 
@@ -386,6 +400,7 @@ function eval!(p::ProdNode; max::Bool=false)
     p.logval = sum(childvalues)
     return p.logval
 end
+
 
 
 """
