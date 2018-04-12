@@ -272,6 +272,18 @@ function computeDerivatives!(spn::SumProductNetwork)
 end
 
 
+function computeDerivatives1!(spn::SumProductNetwork, x::AbstractMatrix)
+    n,d = size(x)
+    m = numNodes(spn)
+    logdrvs = -Inf * ones(Float64, m, n)
+    for node in reverse(spn.order)
+        if typeof(node) <: InnerNode
+            passDerivative1!(node, x, logdrvs)
+        end
+    end
+end
+
+
 """
    numNodes(spn::SumProductNetwork) -> Int
 

@@ -491,6 +491,30 @@ function passDerivative!(n::InnerNode)
 end
 
 
+function passDerivative1!(n::InnerNode, x::AbstractMatrix, llhvals::Matrix{Float64}, logdrvs::Matrix{Float64})
+    n,d = size(x)
+    child_ids = [child.id for child in s.children]
+    numchildren = length(s.children)
+    child_drvs = logdrvs[childids, :]
+    
+    if isa(n, SumNode)
+        # each entry in a column has the same value
+        # ls = log.(n.weights) .* ones(numchildren, n)  # slower alternative
+        ls = repeat(log.(n.weights), inner=(1,n))
+    else
+        node_logvals = llhvals[n.id,:]
+        child_logvals = llhvals[childids, :]
+        ls = node_logvals' .- child_logvals
+    end
+
+    for id in childids, j in 1:n
+        if logdrvs[childids, j] == -Inf
+            logdrvs[childids, j] =  0
+        end
+    end
+end
+
+
 
 ################################################################
 # MISCELLANEOUS FUNCTIONS
