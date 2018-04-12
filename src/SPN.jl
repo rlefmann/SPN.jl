@@ -1,16 +1,16 @@
 module SPN
 
-include("nodes.jl")
+include("architecture/nodes.jl")
 export Node, InnerNode, LeafNode, SumNode, ProdNode, IndicatorNode, GaussianNode
 export connect!, setInput!, eval!, passDerivative!
 export eval1!
 
-include("network.jl")
+include("architecture/network.jl")
 export SumProductNetwork, computeDerivatives!
 export numNodes, numSumNodes, numProdNodes, numLeafNodes
 export setIDs!
 
-include("inference.jl")
+include("inference/inference.jl")
 export marginalInference!, conditionalInference!, mpeInference!
 
 include("utils.jl")
