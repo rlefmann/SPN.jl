@@ -10,6 +10,9 @@ export SumProductNetwork, computeDerivatives!
 export numNodes, numSumNodes, numProdNodes, numLeafNodes
 export setIDs!
 
+include("inference/evaluation.jl")
+export setInput!, eval!
+
 include("inference/inference.jl")
 export marginalInference!, conditionalInference!, mpeInference!
 
