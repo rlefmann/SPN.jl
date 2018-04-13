@@ -49,8 +49,8 @@ function create_toy_spn()
 end
 
 
-include("testnodes.jl")
-include("testnetwork.jl")
-include("testinference.jl")
-include("testutils.jl")
+include("architecture/testnodes.jl")
+include("architecture/testnetwork.jl")
+include("inference/testinference.jl")
 include("learn/testpoon.jl")
+include("testutils.jl")
