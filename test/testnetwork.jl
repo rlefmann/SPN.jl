@@ -79,7 +79,7 @@ function test_eval1()
     spn = SumProductNetwork(s, recursive=false)
     setIDs!(spn)
     x = [ true false; false false; false true; true true]
-    llhvals = eval1!(spn, x)
+    llhvals = eval!(spn, x)
     @test llhvals[1] ≈ log(0.522)
 end
 

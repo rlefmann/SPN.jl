@@ -48,7 +48,7 @@ function eval!(spn::SumProductNetwork, x::AbstractMatrix)
     llhvals = Matrix{Float64}(m,n)
     # TODO: max evaluation
     for node in spn.order
-        eval1!(node, llhvals, x)
+        eval!(node, x, llhvals)
     end
     return vec(llhvals[spn.root.id,:])
 end

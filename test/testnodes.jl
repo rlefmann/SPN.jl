@@ -155,7 +155,7 @@ function test_eval1()
     m = numNodes(spn)
     llhvals = Matrix{Float64}(m,n)
     for node in spn.order
-        eval1!(node, llhvals, x)
+        eval!(node, x, llhvals)
     end
 
     # i1 indicates if the first variable is 1. This is the case for datapoints 1 and 4:
