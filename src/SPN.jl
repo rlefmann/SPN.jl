@@ -5,7 +5,7 @@ export Node, InnerNode, LeafNode, SumNode, ProdNode, IndicatorNode, GaussianNode
 export connect!, setInput!, eval!
 
 include("architecture/network.jl")
-export SumProductNetwork, computeDerivatives!
+export SumProductNetwork
 export numNodes, numSumNodes, numProdNodes, numLeafNodes
 export setIDs!
 
@@ -13,7 +13,7 @@ include("inference/evaluation.jl")
 export setInput!, eval!
 
 include("inference/derivatives.jl")
-export passDerivative!
+export initDerivatives!, computeDerivatives!, passDerivative!
 
 include("inference/inference.jl")
 export marginalInference!, conditionalInference!, mpeInference!
