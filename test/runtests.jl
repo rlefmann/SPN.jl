@@ -49,9 +49,14 @@ function create_toy_spn()
 end
 
 
-include("architecture/testnodes.jl")
-include("architecture/testnetwork.jl")
-include("inference/testeval.jl")
-include("inference/testinference.jl")
-include("learn/testpoon.jl")
-include("testutils.jl")
+tests = ["architecture/testnodes",
+         "architecture/testnetwork",
+         "inference/testeval",
+         "inference/testinference",
+         "learn/testpoon",
+         "testutils"]
+
+for t in tests
+	println(" * $(t)")
+	include("$(t).jl")
+end
