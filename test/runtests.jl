@@ -51,6 +51,7 @@ end
 
 include("architecture/testnodes.jl")
 include("architecture/testnetwork.jl")
+include("inference/testeval.jl")
 include("inference/testinference.jl")
 include("learn/testpoon.jl")
 include("testutils.jl")
