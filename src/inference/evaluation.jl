@@ -56,7 +56,7 @@ end
 
 
 ################################################################
-# SET INPUT OF LEAF NODES
+# SET INPUT OF LEAF NODES (ONLY FOR SEQUENTIAL EVALUATION)
 ################################################################
 
 """
@@ -117,7 +117,7 @@ function eval!(l::LeafNode; max::Bool=false)
 end
 
 
-function eval1!(i::IndicatorNode, llhvals::Matrix{Float64}, x::AbstractMatrix)
+function eval!(i::IndicatorNode, x::AbstractMatrix, llhvals::Matrix{Float64})
     varidx = i.scope[1]
     @assert size(x, 2) >= varidx
     # get parts of x and e corresponding to the variable i indicates:
@@ -151,7 +151,7 @@ function eval!(p::ProdNode; max::Bool=false)
 end
 
 
-function eval!(p::ProdNode, llhvals::Matrix{Float64}, x::AbstractMatrix)
+function eval!(p::ProdNode, x::AbstractMatrix, llhvals::Matrix{Float64})
     childids = [child.id for child in p.children]
     childvalues = llhvals[childids, :]
     # The log value is the sum of the log values of its children.
@@ -205,7 +205,7 @@ function eval!(s::SumNode; max::Bool=false)
 end
 
 
-function eval1!(s::SumNode, llhvals::Matrix{Float64}, x::AbstractMatrix)
+function eval!(s::SumNode, x::AbstractMatrix, llhvals::Matrix{Float64})
     childids = [child.id for child in s.children]
     childvalues = llhvals[childids, :]
     weighted_cvals = childvalues .+ log.(s.weights)
