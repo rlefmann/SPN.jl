@@ -131,6 +131,20 @@ function eval!(i::IndicatorNode, x::AbstractMatrix, llhvals::Matrix{Float64})
 end
 
 
+"""
+    eval!(g::GaussianNode, x::AbstractMatrix, llhvals::Matrix{Float64})
+
+Matrix evaluation of a Gaussian node.
+"""
+function eval!(g::GaussianNode, x::AbstractMatrix, llhvals::Matrix{Float64})
+    varidx = g.scope[1]
+    xvar = x[:, varidx]
+    llhvals[g.id, :] = logpdf.(g.distr, xvar)
+    # logpdf(g.distr, NaN)=NaN, but we want these nodes to have value log(1)=0:
+    llhvals[g.id, isnan.(xvar)] = 0.0
+end
+
+
 
 ################################################################
 # EVALUATION OF PRODUCT NODES

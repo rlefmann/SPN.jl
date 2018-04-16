@@ -205,13 +205,30 @@ function eval_nodes_matrix()
     @test llhvals[:,2] ≈ log.(dp2_values)
     @test llhvals[:,3] ≈ log.(dp3_values)
     @test llhvals[:,4] ≈ log.(dp4_values)
-
-    println(llhvals)
 end
 
 
+function eval_gaussian_nodes_matrix()
+	x = [1.9 2.0 NaN; 0.0 NaN 3.4]
+	varidx = 2
+	id = 4
+	μ = 0.0
+	σ = 1.0
+	g = GaussianNode(varidx, μ, σ, id)
+	llhvals = zeros(Float64,10,2)  # first number does not matter (number of nodes in network)
+	eval!(g, x, llhvals)
+	for i in 1:10
+		if i != id
+			@test llhvals[i,:] == zeros(Float64, 2)
+		elseif i == id
+			@test llhvals[i,1] ≈ -log(sqrt(2*pi))-2.0  # from simplification of gaussian equation
+			@test llhvals[i,2] == 0.0
+		end
+	end
+end
 
 setinput_indicator_node()
 setinput_indicator_node_partial_evidence()
 eval_nodes()
 eval_nodes_matrix()
+eval_gaussian_nodes_matrix()
