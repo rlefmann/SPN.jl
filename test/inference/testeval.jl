@@ -156,6 +156,62 @@ function eval_nodes_max()
 end
 =#
 
+
+
+################################################################
+# MATRIX EVALUATION OF NODES
+################################################################
+
+function eval_nodes_matrix()
+	s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
+
+	# set the ids of the SPN nodes:
+	node_vector = [s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4]
+	for i in 1:length(node_vector)
+		node_vector[i].id = i
+	end
+
+	# Note: the first datapoint is the same as in eval_nodes
+	x = float([ true false; false false; false true; true true])
+	
+	n,d = size(x)
+    m = length(node_vector)
+    
+    llhvals = Matrix{Float64}(m,n)
+
+    for node in reverse(node_vector)
+    	eval!(node, x, llhvals)
+    end
+
+    function compute_values_for_datapoint(i1_val, i2_val, i3_val, i4_val)
+    	s1_val = 0.6*i1_val + 0.4*i2_val
+		s2_val = 0.9*i1_val + 0.1*i2_val
+		s3_val = 0.3*i3_val + 0.7*i4_val
+		s4_val = 0.2*i3_val + 0.8*i4_val
+		p1_val = s1_val*s3_val
+		p2_val = s1_val*s4_val
+		p3_val = s2_val*s4_val
+		s_val = 0.5*p1_val + 0.2*p2_val + 0.3*p3_val
+		return [s_val, p1_val, p2_val, p3_val, s1_val, s2_val, s3_val, s4_val, i1_val, i2_val, i3_val, i4_val]
+    end
+
+    # expected result for datapoint 1:
+    dp1_values = compute_values_for_datapoint(1.0, 0.0, 0.0, 1.0)
+    dp2_values = compute_values_for_datapoint(0.0, 1.0, 0.0, 1.0)
+    dp3_values = compute_values_for_datapoint(0.0, 1.0, 1.0, 0.0)
+    dp4_values = compute_values_for_datapoint(1.0, 0.0, 1.0, 0.0)
+
+    @test llhvals[:,1] ≈ log.(dp1_values)
+    @test llhvals[:,2] ≈ log.(dp2_values)
+    @test llhvals[:,3] ≈ log.(dp3_values)
+    @test llhvals[:,4] ≈ log.(dp4_values)
+
+    println(llhvals)
+end
+
+
+
 setinput_indicator_node()
 setinput_indicator_node_partial_evidence()
 eval_nodes()
+eval_nodes_matrix()
