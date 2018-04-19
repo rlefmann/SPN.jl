@@ -52,6 +52,7 @@ end
 tests = ["architecture/testnodes",
          "architecture/testnetwork",
          "inference/testeval",
+         "inference/testderivative",
          "inference/testinference",
          "learn/testpoon",
          "testutils"]

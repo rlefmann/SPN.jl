@@ -35,13 +35,17 @@ function computeDerivatives!(spn::SumProductNetwork)
 end
 
 
-function computeDerivatives!(spn::SumProductNetwork, x::AbstractMatrix)
+"""
+Matrix evaluation of derivatives for SumProductNetwork.
+"""
+function computeDerivatives!(spn::SumProductNetwork, x::AbstractMatrix, llhvals::Matrix{Float64})
     n,d = size(x)
     m = numNodes(spn)
     logdrvs = -Inf * ones(Float64, m, n)
+    logdrvs[spn.root.id, :] = zeros(Float64, n)
     for node in reverse(spn.order)
         if typeof(node) <: InnerNode
-            passDerivative!(node, x, logdrvs)
+            passDerivative!(node, x, llhvals, logdrvs)
         end
     end
 end
@@ -68,25 +72,26 @@ function passDerivative!(n::InnerNode)
 end
 
 
-function passDerivative!(n::InnerNode, x::AbstractMatrix, llhvals::Matrix{Float64}, logdrvs::Matrix{Float64})
+function passDerivative!(node::InnerNode, x::AbstractMatrix, llhvals::Matrix{Float64}, logdrvs::Matrix{Float64})
     n,d = size(x)
-    child_ids = [child.id for child in s.children]
-    numchildren = length(s.children)
-    child_drvs = logdrvs[childids, :]
+    child_ids = [child.id for child in node.children]
     
-    if isa(n, SumNode)
+    if isa(node, SumNode)
         # each entry in a column has the same value
         # ls = log.(n.weights) .* ones(numchildren, n)  # slower alternative
-        ls = repeat(log.(n.weights), inner=(1,n))
+        ls = repeat(log.(node.weights), inner=(1,n))
     else
-        node_logvals = llhvals[n.id,:]
-        child_logvals = llhvals[childids, :]
+        node_logvals = llhvals[node.id,:]
+        child_logvals = llhvals[child_ids, :]
         ls = node_logvals' .- child_logvals
     end
 
-    for id in childids, j in 1:n
-        if logdrvs[childids, j] == -Inf
-            logdrvs[childids, j] =  0
+    logdrvs[child_ids, :] = addExp.(logdrvs[child_ids, :], ls .+ logdrvs[node.id,:]')
+    #=
+    for id in child_ids, j in 1:n
+        if logdrvs[child_ids, j] == -Inf
+            logdrvs[child_ids, j] =  0.0
         end
     end
+    =#
 end
