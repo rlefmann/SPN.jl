@@ -42,10 +42,32 @@ function eval!(spn::SumProductNetwork; max=false)
 end
 
 
+"""
+    eval!(spn::SumProductNetwork, x::AbstractMatrix) -> Vector{Float64}
+
+Evaluate a `SumProductNetwork` for each of the datapoints in `x`.
+Return the llhvals of the root node of the SPN.
+"""
 function eval!(spn::SumProductNetwork, x::AbstractMatrix)
     n,d = size(x)
     m = numNodes(spn)
     llhvals = Matrix{Float64}(m,n)
+    # TODO: max evaluation
+    return eval!(spn, x, llhvals)
+end
+
+
+"""
+    eval!(spn::SumProductNetwork, x::AbstractMatrix) -> Vector{Float64}
+
+Evaluate a `SumProductNetwork` for each of the datapoints in `x`.
+The matrix `llhvals` is used to store the llhvals for each node in the SPN and each datapoint.
+Return the llhvals of the root node of the SPN.
+"""
+function eval!(spn::SumProductNetwork, x::AbstractMatrix, llhvals::Matrix{Float64})
+    n,d = size(x)
+    m = numNodes(spn)
+    @assert size(llhvals) == (m,n)
     # TODO: max evaluation
     for node in spn.order
         eval!(node, x, llhvals)
