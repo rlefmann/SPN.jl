@@ -41,8 +41,22 @@ Matrix evaluation of derivatives for SumProductNetwork.
 function computeDerivatives!(spn::SumProductNetwork, x::AbstractMatrix, llhvals::Matrix{Float64})
     n,d = size(x)
     m = numNodes(spn)
-    logdrvs = -Inf * ones(Float64, m, n)
+    logdrvs = Matrix{Float64}(m,n)
+    computeDerivatives!(spn, x, llhvals, logdrvs)
+end
+
+
+"""
+Matrix evaluation of derivatives for SumProductNetwork.
+"""
+function computeDerivatives!(spn::SumProductNetwork, x::AbstractMatrix, llhvals::Matrix{Float64}, logdrvs::Matrix{Float64})
+    n,d = size(x)
+    m = numNodes(spn)
+    @assert size(logdrvs) == (m, n)
+
+    logdrvs[:,:] = -Inf * ones(Float64, m, n)
     logdrvs[spn.root.id, :] = zeros(Float64, n)
+
     for node in reverse(spn.order)
         if typeof(node) <: InnerNode
             passDerivative!(node, x, llhvals, logdrvs)
