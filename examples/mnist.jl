@@ -1,33 +1,30 @@
+################################################################
+# MNIST PCA FEATURES
+# This (almost) reproduces the experiment in section 7.1 of
+# R. Peharz - Foundations of Sum-Product Networks for
+# Probabilistic Modeling.
+################################################################
+
 using SPN
-using MNIST
-using MultivariateStats
 using Gadfly
 
-x, y = traindata()
-@show size(x)
-@show size(y)
+n = 1000
 
+data = readcsv("mnist-pca.csv")
 
-pcaModel = fit(PCA, x; maxoutdim=9)
-xTransformed = transform(pcaModel, x)
-# swap rows and columns:
-x = xTransformed'
-
-
-# Normalize the dataset such that each
-# variable (column) has mean 0 and variance 1.
-
-function normalizeDataset!(x::AbstractArray)
-    x = x .- mean(x,1)
-    x = x
-    return x ./ std(x,1)
+function trainspn(p::Int)
+    x = data[1:n, 1:p*p]
+    spn = structureLearnPoon(x,p,p,nsum=5,nleaf=10,baseres=1)
+    llhvals = parameterLearnEM1!(spn, x, iterations=30)
+    return llhvals./(p*p)  # llhvals normalized by number of random variables
 end
 
-x = normalizeDataset!(x)
-spn = structureLearnPoon(x,3,3,nsum=5,nleaf=10,baseres=1)
-x = x[1:100,:]
-llhvals = parameterLearnEM!(spn, x)
 
+llhvals2 = trainspn(2)
+llhvals3 = trainspn(3)
+llhvals4 = trainspn(4)
 
-
-plot(y=llhvals, Geom.point, Geom.line)
+l1 = layer(y=llhvals2, Geom.point, Geom.line, Theme(default_color=colorant"red"))
+l2 = layer(y=llhvals3, Geom.point, Geom.line, Theme(default_color=colorant"blue"))
+l3 = layer(y=llhvals4, Geom.point, Geom.line, Theme(default_color=colorant"green"))
+plot(l1, l2, l3)
