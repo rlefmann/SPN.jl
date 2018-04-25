@@ -23,6 +23,7 @@ export addExp, quantileMeans, dataLikelihood!
 
 include("learn/parameter.jl")
 export parameterLearnHardEM!, parameterLearnEM!, parameterLearnGD!
+export parameterLearnEM1!
 
 include("learn/poon.jl")
 export structureLearnPoon
