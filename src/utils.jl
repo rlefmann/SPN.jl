@@ -39,12 +39,6 @@ end
 Computes the log-likelihood of the data `x` given the current SPN model.
 """
 function dataLikelihood!(spn::SumProductNetwork, x::AbstractMatrix)
-    llh = 0.0
-    for i in 1:size(x,1)
-        xi = vec(x[i,:])
-        setInput!(spn, xi)
-        llhi = eval!(spn)
-        llh += llhi
-    end
-    return llh
+    llhvals = eval!(spn, x)
+    return sum(llhvals)
 end
