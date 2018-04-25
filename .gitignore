@@ -2,5 +2,7 @@
 *.jl.*.cov
 *.jl.mem
 
+examples/mnist-pca.csv
+
 spn.sublime-project
 spn.sublime-workspace
