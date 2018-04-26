@@ -10,7 +10,7 @@ export numNodes, numSumNodes, numProdNodes, numLeafNodes
 export setIDs!
 
 include("inference/evaluation.jl")
-export setInput!, eval!
+export setInput!, eval!, eval_mpe!
 
 include("inference/derivatives.jl")
 export initDerivatives!, computeDerivatives!, passDerivative!
