@@ -167,7 +167,7 @@ function eval!(g::GaussianNode, x::AbstractMatrix, llhvals::Matrix{Float64}; max
 end
 
 
-function eval_mpe!(l::LeafNode, x::AbstractMatrix, llhvals::Matrix{Float64}, maxchidxs::Matrix{Int}; maxeval::Bool=false)
+function eval_mpe!(l::LeafNode, x::AbstractMatrix, llhvals::Matrix{Float64}, maxchids::Matrix{Int}; maxeval::Bool=false)
     eval!(l, x, llhvals, maxeval=maxeval)
 end
 
@@ -201,7 +201,7 @@ function eval!(p::ProdNode, x::AbstractMatrix, llhvals::Matrix{Float64}; maxeval
 end
 
 
-function eval_mpe!(p::ProdNode, x::AbstractMatrix, llhvals::Matrix{Float64}, maxchidxs::Matrix{Int}; maxeval::Bool=false)
+function eval_mpe!(p::ProdNode, x::AbstractMatrix, llhvals::Matrix{Float64}, maxchids::Matrix{Int}; maxeval::Bool=false)
     eval!(p, x, llhvals, maxeval=maxeval)
 end
 
@@ -261,14 +261,14 @@ function eval!(s::SumNode, x::AbstractMatrix, llhvals::Matrix{Float64}; maxeval:
 end
 
 
-function eval_mpe!(s::SumNode, x::AbstractMatrix, llhvals::Matrix{Float64}, maxchidxs::Matrix{Int}; maxeval::Bool=false)
+function eval_mpe!(s::SumNode, x::AbstractMatrix, llhvals::Matrix{Float64}, maxchids::Matrix{Int}; maxeval::Bool=false)
     weighted_cvals = compute_weighted_cvals(s, llhvals)
     if maxeval == false
         sum_vals = sum(exp.(weighted_cvals), 1)
         llhvals[s.id,:] = log.(sum_vals)
-        maxchidxs[s.id,:] = findmax(weighted_cvals, 1)[2]
+        maxchids[s.id,:] = findmax(weighted_cvals, 1)[2]
     else
-        llhvals[s.id,:], maxchidxs[s.id,:] = findmax(weighted_cvals, 1)
+        llhvals[s.id,:], maxchids[s.id,:] = findmax(weighted_cvals, 1)
     end
 end
 
