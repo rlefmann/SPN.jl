@@ -34,9 +34,9 @@ end
 Evaluates all nodes of an SPN on the current input. Returns the
 logval of the root node.
 """
-function eval!(spn::SumProductNetwork; max=false)
+function eval!(spn::SumProductNetwork; maxeval=false)
     for node in spn.order
-        eval!(node, max=max)
+        eval!(node, maxeval=maxeval)
     end
     return spn.root.logval
 end
@@ -48,12 +48,12 @@ end
 Evaluate a `SumProductNetwork` for each of the datapoints in `x`.
 Return the llhvals of the root node of the SPN.
 """
-function eval!(spn::SumProductNetwork, x::AbstractMatrix)
+function eval!(spn::SumProductNetwork, x::AbstractMatrix; maxeval::Bool=false)
     n,d = size(x)
     m = numNodes(spn)
     llhvals = Matrix{Float64}(m,n)
     # TODO: max evaluation
-    return eval!(spn, x, llhvals)
+    return eval!(spn, x, llhvals, maxeval=maxeval)
 end
 
 
@@ -64,13 +64,13 @@ Evaluate a `SumProductNetwork` for each of the datapoints in `x`.
 The matrix `llhvals` is used to store the llhvals for each node in the SPN and each datapoint.
 Return the llhvals of the root node of the SPN.
 """
-function eval!(spn::SumProductNetwork, x::AbstractMatrix, llhvals::Matrix{Float64})
+function eval!(spn::SumProductNetwork, x::AbstractMatrix, llhvals::Matrix{Float64}; maxeval::Bool=false)
     n,d = size(x)
     m = numNodes(spn)
     @assert size(llhvals) == (m,n)
     # TODO: max evaluation
     for node in spn.order
-        eval!(node, x, llhvals)
+        eval!(node, x, llhvals, maxeval=maxeval)
     end
     return vec(llhvals[spn.root.id,:])
 end
@@ -134,12 +134,12 @@ end
 Returns the log value of the leaf node `l` on the current input.
 The logval is already computed by `setInput!`.
 """
-function eval!(l::LeafNode; max::Bool=false)
+function eval!(l::LeafNode; maxeval::Bool=false)
     return l.logval
 end
 
 
-function eval!(i::IndicatorNode, x::AbstractMatrix, llhvals::Matrix{Float64})
+function eval!(i::IndicatorNode, x::AbstractMatrix, llhvals::Matrix{Float64}; maxeval::Bool=false)
     varidx = i.scope[1]
     @assert size(x, 2) >= varidx
     # get parts of x and e corresponding to the variable i indicates:
@@ -158,12 +158,17 @@ end
 
 Matrix evaluation of a Gaussian node.
 """
-function eval!(g::GaussianNode, x::AbstractMatrix, llhvals::Matrix{Float64})
+function eval!(g::GaussianNode, x::AbstractMatrix, llhvals::Matrix{Float64}; maxeval::Bool=false)
     varidx = g.scope[1]
     xvar = x[:, varidx]
     llhvals[g.id, :] = logpdf.(g.distr, xvar)
     # logpdf(g.distr, NaN)=NaN, but we want these nodes to have value log(1)=0:
     llhvals[g.id, isnan.(xvar)] = 0.0
+end
+
+
+function eval_mpe!(l::LeafNode, x::AbstractMatrix, llhvals::Matrix{Float64}, maxchidxs::Matrix{Int}; maxeval::Bool=false)
+    eval!(l, x, llhvals, maxeval=maxeval)
 end
 
 
@@ -180,14 +185,14 @@ Computes the log value of the product node `p` on the current input.
 The value of a product node is the product of the values of its children.
 Therefore, the log value is the sum of the log values of its children.
 """
-function eval!(p::ProdNode; max::Bool=false)
+function eval!(p::ProdNode; maxeval::Bool=false)
     childvalues = [child.logval for child in p.children]
     p.logval = sum(childvalues)
     return p.logval
 end
 
 
-function eval!(p::ProdNode, x::AbstractMatrix, llhvals::Matrix{Float64})
+function eval!(p::ProdNode, x::AbstractMatrix, llhvals::Matrix{Float64}; maxeval::Bool=false)
     childids = [child.id for child in p.children]
     childvalues = llhvals[childids, :]
     # The log value is the sum of the log values of its children.
@@ -195,6 +200,10 @@ function eval!(p::ProdNode, x::AbstractMatrix, llhvals::Matrix{Float64})
     llhvals[p.id, :] = sum(childvalues, 1)
 end
 
+
+function eval_mpe!(p::ProdNode, x::AbstractMatrix, llhvals::Matrix{Float64}, maxchidxs::Matrix{Int}; maxeval::Bool=false)
+    eval!(p, x, llhvals, maxeval=maxeval)
+end
 
 
 ################################################################
@@ -213,7 +222,7 @@ log(S_i) = log(sum_j w_ij S_j) = log(sum_j exp(log(w_ij)) * exp(log(S_j)))
 If the keyword argument `max` is set to true the value of the sum node is its maximum weighted child value.
 In log-space this means max(log(w_ij) + s_j).
 """
-function eval!(s::SumNode; max::Bool=false)
+function eval!(s::SumNode; maxeval::Bool=false)
     childvalues = [child.logval for child in s.children]
     numChildren = length(childvalues)
 
@@ -229,7 +238,7 @@ function eval!(s::SumNode; max::Bool=false)
         end
     end
 
-    if max == false
+    if maxeval == false
         s.logval = log(sum_val)
     else
         #s.logval = max_val
@@ -241,10 +250,32 @@ function eval!(s::SumNode; max::Bool=false)
 end
 
 
-function eval!(s::SumNode, x::AbstractMatrix, llhvals::Matrix{Float64})
+function eval!(s::SumNode, x::AbstractMatrix, llhvals::Matrix{Float64}; maxeval::Bool=false)
+    weighted_cvals = compute_weighted_cvals(s, llhvals)
+    if maxeval == false
+        sum_vals = sum(exp.(weighted_cvals), 1)
+        llhvals[s.id,:] = log.(sum_vals)
+    else
+        llhvals[s.id,:] = maximum(weighted_cvals, 1)
+    end
+end
+
+
+function eval_mpe!(s::SumNode, x::AbstractMatrix, llhvals::Matrix{Float64}, maxchidxs::Matrix{Int}; maxeval::Bool=false)
+    weighted_cvals = compute_weighted_cvals(s, llhvals)
+    if maxeval == false
+        sum_vals = sum(exp.(weighted_cvals), 1)
+        llhvals[s.id,:] = log.(sum_vals)
+        maxchidxs[s.id,:] = findmax(weighted_cvals, 1)[2]
+    else
+        llhvals[s.id,:], maxchidxs[s.id,:] = findmax(weighted_cvals, 1)
+    end
+end
+
+
+function compute_weighted_cvals(s::SumNode, llhvals::Matrix{Float64})
     childids = [child.id for child in s.children]
     childvalues = llhvals[childids, :]
     weighted_cvals = childvalues .+ log.(s.weights)
-    sum_vals = sum(exp.(weighted_cvals), 1)
-    llhvals[s.id,:] = log.(sum_vals)
+    return weighted_cvals
 end
