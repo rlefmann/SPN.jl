@@ -19,7 +19,7 @@ include("inference/inference.jl")
 export marginalInference!, conditionalInference!, mpeInference!
 
 include("utils.jl")
-export addExp, quantileMeans, dataLikelihood!
+export addExp, quantileMeans, dataLikelihood!, create_toy_spn
 
 include("learn/parameter.jl")
 export parameterLearnHardEM!, parameterLearnEM!, parameterLearnGD!
