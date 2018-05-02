@@ -272,7 +272,14 @@ function eval_mpe!(s::SumNode, x::AbstractMatrix, llhvals::Matrix{Float64}, maxc
     else
         llhvals[s.id,:] = maxvals
     end
+    #= 
+    maxidxs is a flattened index for the weighted_cvals array.
+    We have to find the row of the maximal entry of each column from these indices. 
+    We can use ind2sub, but this results in ugly code, so we do the conversion
+    using modulo calculation.
+    =#
     vertical_indices = ((maxidxs .- 1) .% size(weighted_cvals, 1)) .+ 1
+    # turn the row index into a child id:
     maxchids[s.id,:] = childids[vertical_indices]
 end
 
