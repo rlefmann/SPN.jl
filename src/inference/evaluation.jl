@@ -251,7 +251,8 @@ end
 
 
 function eval!(s::SumNode, x::AbstractMatrix, llhvals::Matrix{Float64}; maxeval::Bool=false)
-    weighted_cvals = compute_weighted_cvals(s, llhvals)
+    childids = [child.id for child in s.children]
+    weighted_cvals = compute_weighted_cvals(childids, s.weights, llhvals)
     if maxeval == false
         sum_vals = sum(exp.(weighted_cvals), 1)
         llhvals[s.id,:] = log.(sum_vals)
@@ -262,20 +263,22 @@ end
 
 
 function eval_mpe!(s::SumNode, x::AbstractMatrix, llhvals::Matrix{Float64}, maxchids::Matrix{Int}; maxeval::Bool=false)
-    weighted_cvals = compute_weighted_cvals(s, llhvals)
+    childids = [child.id for child in s.children]
+    weighted_cvals = compute_weighted_cvals(childids, s.weights, llhvals)
+    maxvals, maxidxs = findmax(weighted_cvals, 1)
     if maxeval == false
         sum_vals = sum(exp.(weighted_cvals), 1)
         llhvals[s.id,:] = log.(sum_vals)
-        maxchids[s.id,:] = findmax(weighted_cvals, 1)[2]
     else
-        llhvals[s.id,:], maxchids[s.id,:] = findmax(weighted_cvals, 1)
+        llhvals[s.id,:] = maxvals
     end
+    vertical_indices = ((maxidxs .- 1) .% size(weighted_cvals, 1)) .+ 1
+    maxchids[s.id,:] = childids[vertical_indices]
 end
 
 
-function compute_weighted_cvals(s::SumNode, llhvals::Matrix{Float64})
-    childids = [child.id for child in s.children]
+function compute_weighted_cvals(childids::Vector{Int}, weights::Vector{Float64}, llhvals::Matrix{Float64})
     childvalues = llhvals[childids, :]
-    weighted_cvals = childvalues .+ log.(s.weights)
+    weighted_cvals = childvalues .+ log.(weights)
     return weighted_cvals
 end
