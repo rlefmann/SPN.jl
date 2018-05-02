@@ -3,6 +3,70 @@
 # This file tests the evaluation of nodes.
 ################################################################
 
+
+
+################################################################
+# EXPECTED VALUES FOR EVALUATION OF TOY SPN
+################################################################
+
+function compute_values_for_datapoint(i1_val, i2_val, i3_val, i4_val)
+	s1_val = 0.6*i1_val + 0.4*i2_val
+	s2_val = 0.9*i1_val + 0.1*i2_val
+	s3_val = 0.3*i3_val + 0.7*i4_val
+	s4_val = 0.2*i3_val + 0.8*i4_val
+	p1_val = s1_val*s3_val
+	p2_val = s1_val*s4_val
+	p3_val = s2_val*s4_val
+	s_val = 0.5*p1_val + 0.2*p2_val + 0.3*p3_val
+	return [s_val, p1_val, p2_val, p3_val, s1_val, s2_val, s3_val, s4_val, i1_val, i2_val, i3_val, i4_val]
+end
+
+
+function compute_values_for_datapoint_max(i1_val, i2_val, i3_val, i4_val)
+	s1_val = maximum([0.6*i1_val, 0.4*i2_val])
+	s2_val = maximum([0.9*i1_val, 0.1*i2_val])
+	s3_val = maximum([0.3*i3_val, 0.7*i4_val])
+	s4_val = maximum([0.3*i3_val, 0.8*i4_val])
+	s2_val = 0.9*i1_val + 0.1*i2_val
+	s3_val = 0.3*i3_val + 0.7*i4_val
+	s4_val = 0.2*i3_val + 0.8*i4_val
+	p1_val = s1_val*s3_val
+	p2_val = s1_val*s4_val
+	p3_val = s2_val*s4_val
+	s_val = maximum([0.5*p1_val, 0.2*p2_val, 0.3*p3_val])
+	return [s_val, p1_val, p2_val, p3_val, s1_val, s2_val, s3_val, s4_val, i1_val, i2_val, i3_val, i4_val]
+end
+
+
+function compute_maxchildids_for_datapoint(i1_val, i2_val, i3_val, i4_val)
+	(s1_val, s1_maxidx) = findmax([0.6*i1_val, 0.4*i2_val])
+	(s2_val, s2_maxidx) = findmax([0.9*i1_val, 0.1*i2_val])
+	(s3_val, s3_maxidx) = findmax([0.3*i3_val, 0.7*i4_val])
+	(s4_val, s4_maxidx) = findmax([0.2*i3_val, 0.8*i4_val])
+	s1_maxidx += 8  # idx1 = id9, idx2 = id10
+	s2_maxidx += 8
+	s3_maxidx += 10  # idx1 = id11, idx2 = id12
+	s4_maxidx += 10
+	s2_val = 0.9*i1_val + 0.1*i2_val
+	s3_val = 0.3*i3_val + 0.7*i4_val
+	s4_val = 0.2*i3_val + 0.8*i4_val
+	p1_val = s1_val*s3_val
+	p2_val = s1_val*s4_val
+	p3_val = s2_val*s4_val
+	s_val, s_maxidx = findmax([0.5*p1_val, 0.2*p2_val, 0.3*p3_val])
+	s_maxidx += 1  # idx1 = id2, idx2 = id3, idx3 = id4
+
+	maxchids = zeros(Int, 12)
+	maxchids[1] = s_maxidx
+	maxchids[5] = s1_maxidx
+	maxchids[6] = s2_maxidx
+	maxchids[7] = s3_maxidx
+	maxchids[8] = s4_maxidx
+
+	return maxchids
+end
+
+
 ################################################################
 # OLD WAY TO EVALUATE NODES
 ################################################################
@@ -105,58 +169,6 @@ function eval_nodes()
 	@test eval!(s) ≈ log(s_val)
 end
 
-#=
-"""
-Test the evaluation with the max keyword argument set to true.
-Every sum node becomes a max node whose value is its maximum weighted child value.
-"""
-function eval_nodes_max()
-	s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
-	
-	x = [true, false]
-	e = BitVector([true, false])  # we only know the state of the first variable
-
-	# Calculate value of nodes manually (not in logspace):
-	s1_val = 0.6
-	s1_idx = 1
-	s2_val = 0.9
-	s2_idx = 1
-	s3_val = 0.7
-	s3_idx = 2
-	s4_val = 0.8
-	s4_idx = 2
-	p1_val = s1_val*s3_val
-	p2_val = s1_val*s4_val
-	p3_val = s2_val*s4_val
-	s_val = 0.3*p3_val
-	s_idx = 3
-
-	setInput!(i1, x, e)
-	setInput!(i2, x, e)
-	setInput!(i3, x, e)
-	setInput!(i4, x, e)
-
-	@test eval!(i1, max=true) ≈ log(1)
-	@test eval!(i2, max=true) ≈ log(0)
-	@test eval!(i3, max=true) ≈ log(1)
-	@test eval!(i4, max=true) ≈ log(1)
-	@test eval!(s1, max=true) ≈ log(s1_val)
-	@test eval!(s2, max=true) ≈ log(s2_val)
-	@test eval!(s3, max=true) ≈ log(s3_val)
-	@test eval!(s4, max=true) ≈ log(s4_val)
-	@test eval!(p1, max=true) ≈ log(p1_val)
-	@test eval!(p2, max=true) ≈ log(p2_val)
-	@test eval!(p3, max=true) ≈ log(p3_val)
-	@test eval!(s, max=true) ≈ log(s_val)
-	@test s1.maxidx == s1_idx
-	@test s2.maxidx == s2_idx
-	@test s3.maxidx == s3_idx
-	@test s4.maxidx == s4_idx
-	@test s.maxidx == s_idx
-end
-=#
-
-
 
 ################################################################
 # MATRIX EVALUATION OF NODES
@@ -181,18 +193,6 @@ function eval_nodes_matrix()
 
     for node in reverse(node_vector)
     	eval!(node, x, llhvals)
-    end
-
-    function compute_values_for_datapoint(i1_val, i2_val, i3_val, i4_val)
-    	s1_val = 0.6*i1_val + 0.4*i2_val
-		s2_val = 0.9*i1_val + 0.1*i2_val
-		s3_val = 0.3*i3_val + 0.7*i4_val
-		s4_val = 0.2*i3_val + 0.8*i4_val
-		p1_val = s1_val*s3_val
-		p2_val = s1_val*s4_val
-		p3_val = s2_val*s4_val
-		s_val = 0.5*p1_val + 0.2*p2_val + 0.3*p3_val
-		return [s_val, p1_val, p2_val, p3_val, s1_val, s2_val, s3_val, s4_val, i1_val, i2_val, i3_val, i4_val]
     end
 
     # expected result for datapoint 1:
@@ -230,26 +230,11 @@ function eval_nodes_matrix_max()
     	eval!(node, x, llhvals, maxeval=true)
     end
 
-    function compute_values_for_datapoint(i1_val, i2_val, i3_val, i4_val)
-    	s1_val = maximum([0.6*i1_val, 0.4*i2_val])
-    	s2_val = maximum([0.9*i1_val, 0.1*i2_val])
-    	s3_val = maximum([0.3*i1_val, 0.7*i2_val])
-    	s4_val = maximum([0.2*i1_val, 0.8*i2_val])
-		s2_val = 0.9*i1_val + 0.1*i2_val
-		s3_val = 0.3*i3_val + 0.7*i4_val
-		s4_val = 0.2*i3_val + 0.8*i4_val
-		p1_val = s1_val*s3_val
-		p2_val = s1_val*s4_val
-		p3_val = s2_val*s4_val
-		s_val = maximum([0.5*p1_val, 0.2*p2_val, 0.3*p3_val])
-		return [s_val, p1_val, p2_val, p3_val, s1_val, s2_val, s3_val, s4_val, i1_val, i2_val, i3_val, i4_val]
-    end
-
     # expected result for datapoint 1:
-    dp1_values = compute_values_for_datapoint(1.0, 0.0, 0.0, 1.0)
-    dp2_values = compute_values_for_datapoint(0.0, 1.0, 0.0, 1.0)
-    dp3_values = compute_values_for_datapoint(0.0, 1.0, 1.0, 0.0)
-    dp4_values = compute_values_for_datapoint(1.0, 0.0, 1.0, 0.0)
+    dp1_values = compute_values_for_datapoint_max(1.0, 0.0, 0.0, 1.0)
+    dp2_values = compute_values_for_datapoint_max(0.0, 1.0, 0.0, 1.0)
+    dp3_values = compute_values_for_datapoint_max(0.0, 1.0, 1.0, 0.0)
+    dp4_values = compute_values_for_datapoint_max(1.0, 0.0, 1.0, 0.0)
 
     @test llhvals[:,1] ≈ log.(dp1_values)
     @test llhvals[:,2] ≈ log.(dp2_values)
@@ -277,9 +262,45 @@ function eval_gaussian_nodes_matrix()
 	end
 end
 
+
+function eval_mpe()
+	s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
+
+	# set the ids of the SPN nodes:
+	node_vector = [s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4]
+	for i in 1:length(node_vector)
+		node_vector[i].id = i
+	end
+
+	# Note: the first datapoint is the same as in eval_nodes
+	x = float([ true false; false false; false true; true true])
+	
+	n,d = size(x)
+    m = length(node_vector)
+    
+    llhvals = Matrix{Float64}(m, n)
+    maxchids = zeros(Int, m, n)
+
+    for node in reverse(node_vector)
+    	eval_mpe!(node, x, llhvals, maxchids, maxeval=true)
+    end
+
+    dp1_values = compute_maxchildids_for_datapoint(1.0, 0.0, 0.0, 1.0)
+    dp2_values = compute_maxchildids_for_datapoint(0.0, 1.0, 0.0, 1.0)
+   	dp3_values = compute_maxchildids_for_datapoint(0.0, 1.0, 1.0, 0.0)
+    dp4_values = compute_maxchildids_for_datapoint(1.0, 0.0, 1.0, 0.0)
+
+    @test maxchids[:,1] == dp1_values
+    @test maxchids[:,2] == dp2_values
+    @test maxchids[:,3] == dp3_values
+    @test maxchids[:,4] == dp4_values
+end
+
+
 setinput_indicator_node()
 setinput_indicator_node_partial_evidence()
 eval_nodes()
 eval_nodes_matrix()
 eval_nodes_matrix_max()
 eval_gaussian_nodes_matrix()
+eval_mpe()
