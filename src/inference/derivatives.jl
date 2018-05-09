@@ -48,6 +48,10 @@ end
 
 """
 Matrix evaluation of derivatives for SumProductNetwork.
+
+## Arguments
+
+* `logdrvs::Matrix{Float64}`: The log-derivative value for each node and each datapoint.
 """
 function computeDerivatives!(spn::SumProductNetwork, x::AbstractMatrix, llhvals::Matrix{Float64}, logdrvs::Matrix{Float64})
     n,d = size(x)

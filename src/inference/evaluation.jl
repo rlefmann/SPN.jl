@@ -157,6 +157,10 @@ end
     eval!(g::GaussianNode, x::AbstractMatrix, llhvals::Matrix{Float64})
 
 Matrix evaluation of a Gaussian node.
+
+## Arguments
+
+* `llhvals::Matrix{Float64}`: The log-likelihood values for each node and each datapoint.
 """
 function eval!(g::GaussianNode, x::AbstractMatrix, llhvals::Matrix{Float64}; maxeval::Bool=false)
     varidx = g.scope[1]
