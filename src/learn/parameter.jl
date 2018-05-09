@@ -4,6 +4,7 @@
 
 using StatsBase
 
+#=
 """
 Learns the parameters of an SPN using hard EM.
 
@@ -74,8 +75,10 @@ function parameterLearnHardEM!(spn::SumProductNetwork, x::AbstractMatrix; iterat
 
 	return llhvals
 end
+=#
 
 
+#=
 """
 Learns the parameters of an SPN using EM.
 
@@ -133,9 +136,10 @@ function parameterLearnEM!(spn::SumProductNetwork, x::AbstractMatrix; iterations
 
 	return llhvals
 end
+=#
 
 
-function parameterLearnEM1!(spn::SumProductNetwork, x::AbstractMatrix; iterations=30)
+function parameterLearnEM!(spn::SumProductNetwork, x::AbstractMatrix; iterations=30)
 	n, d = size(x)
 	m = numNodes(spn)
 
@@ -195,7 +199,7 @@ end
 
 
 
-
+#=
 function parameterLearnGD!(spn::SumProductNetwork, x::AbstractMatrix; iterations=30, learnrate=0.1)
 	n,d = size(x)
 
@@ -228,3 +232,4 @@ function parameterLearnGD!(spn::SumProductNetwork, x::AbstractMatrix; iterations
 		@printf "iteration %d:\t llh=%f\n" t llhvals[t]
 	end
 end
+=#
