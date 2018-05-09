@@ -6,6 +6,7 @@ using Distributions
 ################################################################
 
 """
+A symbol representing the state of the node for graph traversals.
 A node can be in one of three states:
 * unmarked
 * temporary
@@ -24,14 +25,12 @@ a topological order of the nodes in an SPN.
 """
 Every node of an SPN has to be of a subtype of `Node`.
 
-Every subtype of `Node` needs to have the fields (even though Julia does not enforce it):
+Every subtype of `Node` needs to have the fields 
+(even though Julia does not enforce it):
 
 * `id`: a unique number representing the node. Necessary for evaluation
 * `parents`:  a list of parent nodes
 * `scope`: a list of variables which influence the node
-* `logval`: the current value of the node
-* `logdrv`: the current value of the log derivative
-* `state`: a symbol representing the state of the node for graph traversals
 """
 abstract type Node end
 
@@ -39,13 +38,15 @@ abstract type Node end
 """
 Inner nodes are either sum nodes or product nodes.
 
-They must have an additional field `children::Vector{Node}` that is a list of their child nodes.
+They must have an additional field `children::Vector{Node}` 
+that is a list of their child nodes.
 """
 abstract type InnerNode <: Node end
 
 
 """
-Leaf nodes are nodes without children that represent some univariate probability distribution.
+Leaf nodes are nodes without children that represent some
+univariate probability distribution.
 """
 abstract type LeafNode <: Node end
 
@@ -62,14 +63,14 @@ mutable struct ProdNode <: InnerNode
     "The id number of this node."
     id::Int
 
-    "The node can have a state. Necessary for graph traversals."
-    state::State
-
 	"The parent nodes of this node."
 	parents::Vector{InnerNode}
 	"The child nodes of this node."
 	children::Vector{Node}
-	"The scope of this node (a list of variables which influence the node)."
+	"""
+    The scope of this node (a list of variables 
+    which influence the node).
+    """
 	scope::Vector{Int}
 end
 
@@ -78,14 +79,10 @@ end
 Creates a new product node.
 """
 function ProdNode(id::Int=0)
-	#logval = -Inf  # The default logval is log(0)=-Inf
-    #logdrv = -Inf  # The default logdrv is log(0)=-Inf
-    state = unmarked
 	parents = InnerNode[]
 	children = Node[]
 	scope = Int[]
-	#ProdNode(id, logval, logdrv, state, parents, children, scope)
-    ProdNode(id, state, parents, children, scope)
+    ProdNode(id, parents, children, scope)
 end
 
 
@@ -97,9 +94,7 @@ mutable struct SumNode <: InnerNode
     id::Int
 
     "The index of the child with highest weighted value. Necessary for MPE inference."
-    maxidx::Int
-    "The node can have a state. Necessary for graph traversals."
-    state::State
+    maxidx::Int  # TODO: remove
 
 	"The parent nodes of this node."
 	parents::Vector{InnerNode}
@@ -119,10 +114,7 @@ end
 Creates a new sum node.
 """
 function SumNode(id::Int=0)
-	#logval = -Inf  # The default logval is log(0)=-Inf
-    #logdrv = -Inf  # The default logdrv is log(0)=-Inf
     maxidx = -1
-    state = unmarked
 	parents = InnerNode[]
 	children = Node[]
 	scope = Int[]
@@ -130,8 +122,7 @@ function SumNode(id::Int=0)
 	weights = Float64[]
     counts = Float64[]
 
-	#SumNode(id, logval, logdrv, maxidx, state, parents, children, scope, weights, counts)
-    SumNode(id, maxidx, state, parents, children, scope, weights, counts)
+    SumNode(id, maxidx, parents, children, scope, weights, counts)
 end
 
 
@@ -152,13 +143,6 @@ mutable struct IndicatorNode <: LeafNode
     "The id number of this node."
     id::Int
 
-    "the log-likelihood value of this node."
-    #logval::Float64
-    "The log-derivative value of this node."
-    #logdrv::Float64
-    "The node can have a state. Necessary for graph traversals."
-    state::State
-
     "The parent nodes of this node."
     parents::Vector{InnerNode}
     "the scope of this node."
@@ -175,13 +159,11 @@ Creates a new indicator node for a random variable with floating point values.
 """
 function IndicatorNode(varidx::Int, indicates::Float64, id::Int=0)
 	@assert varidx > 0
-    #logval = -Inf
-    #logdrv = -Inf
-    state = unmarked
+
     parents = InnerNode[]
     scope = Int[varidx]
-    #IndicatorNode(id, logval, logdrv, state, parents, scope, indicates)
-    IndicatorNode(id, state, parents, scope, indicates)
+    
+    IndicatorNode(id, parents, scope, indicates)
 end
 
 """
@@ -201,13 +183,6 @@ A `GaussianNode` represents a univariate Gaussian distribution.
 mutable struct GaussianNode <: LeafNode
     "The id number of this node."
     id::Int
-
-    "the log-likelihood value of this node."
-    #logval::Float64
-    "The log-derivative value of this node."
-    #logdrv::Float64
-    "The node can have a state. Necessary for graph traversals."
-    state::State
 
     "The parent nodes of this node."
     parents::Vector{InnerNode}
@@ -231,15 +206,11 @@ Creates a new Gaussian node.
 function GaussianNode(varidx::Int, μ::Float64, σ::Float64, id::Int=0)
     @assert varidx > 0
 
-    #logval = -Inf
-    #logdrv = -Inf
-    state = unmarked
     parents = InnerNode[]
     scope = Int[varidx]
     distr = Normal(μ,σ)
 
-    #GaussianNode(id,logval,logdrv,state,parents,scope,μ,σ,distr)
-    GaussianNode(id,state,parents,scope,μ,σ,distr)
+    GaussianNode(id,parents,scope,μ,σ,distr)
 end
 
 
