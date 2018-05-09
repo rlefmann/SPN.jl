@@ -1,5 +1,5 @@
 """
-Tests the computation of the evaluation order using DFS
+Test the computation of the evaluation order using recursive DFS
 on the toy SPN.
 """
 function test_compute_order_recursive()
@@ -13,6 +13,10 @@ function test_compute_order_recursive()
 end
 
 
+"""
+Test the computation of the evaluation order using DFS and a stack
+on the toy SPN.
+"""
 function test_compute_order_stack()
     s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
     spn = SumProductNetwork(s, recursive=false)
@@ -25,7 +29,7 @@ end
 
 
 """
-Tests wether the algorithms detect cycles correctly.
+Test wether the order computation algorithms detect cycles correctly.
 """
 function test_compute_order_recursive_cycles()
 

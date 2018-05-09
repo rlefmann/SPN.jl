@@ -17,7 +17,7 @@ end
 """
     computeOrder(root::Node) -> Vector{Node}
 
-Computes a topological ordering of the nodes of an SPN
+Compute a topological ordering of the nodes of an SPN
 rooted at `root` by performing a post-order traversal
 of the network. Set the node ids according to their
 position in the order.
@@ -32,7 +32,7 @@ end
 
 
 """
-Recursively compute topological order. Might probably be slow.
+Recursively compute topological order.
 """
 function computeOrderRecursive(root::Node)
     order = Node[]
@@ -73,7 +73,7 @@ end
 
 
 """
-Computes order non-recursive, using a stack.
+Compute order non-recursive, using a stack.
 """
 function computeOrderStack(root::Node)
     order = Vector{Node}()
