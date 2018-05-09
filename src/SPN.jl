@@ -22,8 +22,8 @@ include("utils.jl")
 export addExp, quantileMeans, dataLikelihood!, create_toy_spn
 
 include("learn/parameter.jl")
-export parameterLearnHardEM!, parameterLearnEM!, parameterLearnGD!
-export parameterLearnEM1!
+export parameterLearnEM!
+#export parameterLearnHardEM!, parameterLearnEM!, parameterLearnGD!
 
 include("learn/poon.jl")
 export structureLearnPoon

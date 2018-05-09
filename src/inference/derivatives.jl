@@ -7,6 +7,7 @@
 # The derivatives can be computed using backpropagation.
 ################################################################
 
+#=
 """
 Sets the `logdrv` field of every node to -Inf.
 """
@@ -15,8 +16,9 @@ function initDerivatives!(spn::SumProductNetwork)
         node.logdrv = -Inf
     end
 end
+=#
 
-
+#=
 """
 Computes the log derivative of the likelihood w.r.t. all
 nodes in the SPN.
@@ -33,7 +35,7 @@ function computeDerivatives!(spn::SumProductNetwork)
         end
     end
 end
-
+=#
 
 """
 Matrix evaluation of derivatives for SumProductNetwork.
@@ -68,7 +70,7 @@ function computeDerivatives!(spn::SumProductNetwork, x::AbstractMatrix, llhvals:
     end
 end
 
-
+#=
 """
 Computes the derivative
 """
@@ -88,7 +90,7 @@ function passDerivative!(n::InnerNode)
         end
     end
 end
-
+=#
 
 function passDerivative!(node::InnerNode, x::AbstractMatrix, llhvals::Matrix{Float64}, logdrvs::Matrix{Float64})
     n,d = size(x)
