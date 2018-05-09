@@ -9,6 +9,9 @@
 # EXPECTED VALUES FOR EVALUATION OF TOY SPN
 ################################################################
 
+"""
+Compute the value of each node in the toy SPN for the given input.
+"""
 function compute_values_for_datapoint(i1_val, i2_val, i3_val, i4_val)
 	s1_val = 0.6*i1_val + 0.4*i2_val
 	s2_val = 0.9*i1_val + 0.1*i2_val
@@ -22,6 +25,11 @@ function compute_values_for_datapoint(i1_val, i2_val, i3_val, i4_val)
 end
 
 
+"""
+Compute the value of each node in the toy SPN for the given input
+when max evaluation is used, i.e. the value of a sum node is the
+maximum weighted value among its children.
+"""
 function compute_values_for_datapoint_max(i1_val, i2_val, i3_val, i4_val)
 	s1_val = maximum([0.6*i1_val, 0.4*i2_val])
 	s2_val = maximum([0.9*i1_val, 0.1*i2_val])
@@ -38,6 +46,10 @@ function compute_values_for_datapoint_max(i1_val, i2_val, i3_val, i4_val)
 end
 
 
+"""
+Compute the IDs of the winning child for each sum node
+in the toy SPN when performing MPE evaluation.
+"""
 function compute_maxchildids_for_datapoint(i1_val, i2_val, i3_val, i4_val)
 	(s1_val, s1_maxidx) = findmax([0.6*i1_val, 0.4*i2_val])
 	(s2_val, s2_maxidx) = findmax([0.9*i1_val, 0.1*i2_val])
@@ -170,6 +182,30 @@ function eval_nodes()
 end
 
 
+
+################################################################
+# MATRIX EVALUATION OF NETWORK
+################################################################
+
+function eval_network()
+    s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
+    spn = SumProductNetwork(s, recursive=false)
+    
+    x = [ true false; false false; false true; true true]
+    llhvals = eval!(spn, x)
+    
+    dp1_values = compute_values_for_datapoint(1.0, 0.0, 0.0, 1.0)
+    dp2_values = compute_values_for_datapoint(0.0, 1.0, 0.0, 1.0)
+    dp3_values = compute_values_for_datapoint(0.0, 1.0, 1.0, 0.0)
+    dp4_values = compute_values_for_datapoint(1.0, 0.0, 1.0, 0.0)
+
+    @test llhvals[1] ≈ log(dp1_values[1])
+    @test llhvals[2] ≈ log(dp2_values[1])
+    @test llhvals[3] ≈ log(dp3_values[1])
+    @test llhvals[4] ≈ log(dp4_values[1])
+end
+
+
 ################################################################
 # MATRIX EVALUATION OF NODES
 ################################################################
@@ -195,7 +231,7 @@ function eval_nodes_matrix()
     	eval!(node, x, llhvals)
     end
 
-    # expected result for datapoint 1:
+    # expected result for datapoints:
     dp1_values = compute_values_for_datapoint(1.0, 0.0, 0.0, 1.0)
     dp2_values = compute_values_for_datapoint(0.0, 1.0, 0.0, 1.0)
     dp3_values = compute_values_for_datapoint(0.0, 1.0, 1.0, 0.0)
@@ -297,9 +333,10 @@ function eval_mpe()
 end
 
 
-setinput_indicator_node()
-setinput_indicator_node_partial_evidence()
-eval_nodes()
+#setinput_indicator_node()
+#setinput_indicator_node_partial_evidence()
+#eval_nodes()
+eval_network()
 eval_nodes_matrix()
 eval_nodes_matrix_max()
 eval_gaussian_nodes_matrix()

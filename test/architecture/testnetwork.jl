@@ -53,43 +53,6 @@ function test_compute_order_recursive_cycles()
     @test_throws ErrorException SumProductNetwork(s1, recursive=false)
 end
 
-
-function test_eval()
-    s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
-    spn = SumProductNetwork(s, recursive=false)
-
-    x = [true, false]
-    setInput!(spn, x)
-    eval!(spn)
-
-    @test i1.logval ≈ log(1)
-    @test i2.logval ≈ log(0)
-    @test i3.logval ≈ log(0)
-    @test i4.logval ≈ log(1)
-
-    @test s1.logval ≈ log(0.6)
-    @test s2.logval ≈ log(0.9)
-    @test s3.logval ≈ log(0.7)
-    @test s4.logval ≈ log(0.8)
-
-    @test p1.logval ≈ log(0.42)
-    @test p2.logval ≈ log(0.48)
-    @test p3.logval ≈ log(0.72)
-
-    @test s.logval ≈ log(0.522)
-end
-
-
-function test_eval1()
-    s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
-    spn = SumProductNetwork(s, recursive=false)
-    setIDs!(spn)
-    x = [ true false; false false; false true; true true]
-    llhvals = eval!(spn, x)
-    @test llhvals[1] ≈ log(0.522)
-end
-
-
 function test_computeDerivatives()
     s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
     spn = SumProductNetwork(s, recursive=false)
