@@ -94,7 +94,7 @@ mutable struct SumNode <: InnerNode
     id::Int
 
     "The index of the child with highest weighted value. Necessary for MPE inference."
-    maxidx::Int  # TODO: remove
+    #maxidx::Int  # TODO: remove
 
 	"The parent nodes of this node."
 	parents::Vector{InnerNode}
@@ -114,7 +114,7 @@ end
 Creates a new sum node.
 """
 function SumNode(id::Int=0)
-    maxidx = -1
+    #maxidx = -1
 	parents = InnerNode[]
 	children = Node[]
 	scope = Int[]
@@ -122,7 +122,7 @@ function SumNode(id::Int=0)
 	weights = Float64[]
     counts = Float64[]
 
-    SumNode(id, maxidx, parents, children, scope, weights, counts)
+    SumNode(id, parents, children, scope, weights, counts)
 end
 
 
