@@ -4,7 +4,7 @@ on the toy SPN.
 """
 function test_compute_order_recursive()
     s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
-    spn = SumProductNetwork(s)
+    spn = SumProductNetwork(s, recursive=true)
     expected_order = [i1, i2, s1, i3, i4, s3, p1, s4, p2, s2, p3, s]
     for i in 1:length(expected_order)
         @test spn.order[i] == expected_order[i]

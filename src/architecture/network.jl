@@ -14,47 +14,6 @@ mutable struct SumProductNetwork
 end
 
 
-#=
-"""
-    computeOrder(root::Node) -> Vector{Node}
-
-Computes a topological ordering of the nodes of an SPN rooted at `root`.
-Uses depth first search.
-"""
-function computeOrder(root::Node)
-    root.state = temporary
-    stack = Node[root]
-    order = Node[]
-    while ! isempty(stack)
-        node = stack[end]
-        @assert node.state == temporary
-        # remove node from stack and add it to order:
-        node.state = permanently
-        pop!(stack)
-        push!(order, node)
-
-        # add all children to stack that are not on
-        # the stack or in the order list:
-        if typeof(node) <: InnerNode
-            for child in node.children
-                if child.state == unmarked
-                    push!(stack, child)
-                    child.state = temporary
-                end
-            end
-        end
-    end
-
-    # reset state of nodes:
-    for node in order
-        node.state = unmarked
-    end
-
-    return order
-end
-=#
-
-
 """
     computeOrder(root::Node) -> Vector{Node}
 
@@ -77,36 +36,42 @@ Recursively compute topological order. Might probably be slow.
 function computeOrderRecursive(root::Node)
     order = Node[]
 
+    states = Dict{Node, State}()
+
     """
     Post-order traversal for inner nodes.
     """
-    function postOrder(n::InnerNode)
-        n.state = temporary
+    function postOrder(n::InnerNode, states::Dict{Node, State})
+        #n.state = temporary
+        states[n] = temporary
+
         for child in n.children
-            if child.state == unmarked
-                postOrder(child)
-            elseif child.state == temporary
+            if !haskey(states, child)  #child.state == unmarked
+                postOrder(child, states)
+            elseif states[child] == temporary  #child.state == temporary
                 error("network contains cycle. Not a DAG.")
             end
         end
-        n.state = permanently
+        states[n] = permanently
+        #n.state = permanently
         push!(order, n)
     end
 
     """
     Post-order traversal for leaf nodes.
     """
-    function postOrder(l::LeafNode)
+    function postOrder(l::LeafNode, states::Dict{Node, State})
         push!(order, l)
-        l.state = permanently
+        states[l] = permanently
+        #l.state = permanently
     end
 
-    postOrder(root)
+    postOrder(root, states)
 
     # reset state of nodes:
-    for node in order
-        node.state = unmarked
-    end
+    #for node in order
+    #    node.state = unmarked
+    #end
 
     return order
 end
