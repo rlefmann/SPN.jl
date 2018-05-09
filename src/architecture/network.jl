@@ -19,7 +19,8 @@ end
 
 Computes a topological ordering of the nodes of an SPN
 rooted at `root` by performing a post-order traversal
-of the network. 
+of the network. Set the node ids according to their
+position in the order.
 """
 function computeOrder(root::Node; recursive=true)
     if recursive
@@ -53,14 +54,16 @@ function computeOrderRecursive(root::Node)
         end
         states[n] = permanently
         push!(order, n)
+        n.id = length(order)
     end
 
     """
     Post-order traversal for leaf nodes.
     """
     function postOrder(l::LeafNode, states::Dict{Node, State})
-        push!(order, l)
         states[l] = permanently
+        push!(order, l)
+        l.id = length(order)
     end
 
     postOrder(root, states)
@@ -84,63 +87,22 @@ function computeOrderStack(root::Node)
         node = pop!(stack)
 
         # all children have been visited:
-        if haskey(states, node) && states[node] == temporary  #node.state == temporary
-            push!(order, node)
-            #node.state = permanently
+        if haskey(states, node) && states[node] == temporary
             states[node] = permanently
+            push!(order, node)
+            node.id = length(order)
             continue
         end
 
-        #node.state = temporary
         states[node] = temporary
 
         push!(stack, node)
 
         if typeof(node) <: InnerNode
             for child in node.children
-                if !haskey(states, child)  #child.state == unmarked
+                if !haskey(states, child)
                     push!(stack, child)
-                elseif states[child] == temporary  #child.state == temporary
-                    error("network contains cycle. Not a DAG.")
-                end
-            end
-        end
-    end
-
-    # reset state of nodes:
-    #for node in order
-    #    node.state = unmarked
-    #end
-
-    return order
-end
-
-#=
-function computeOrderStack(root::Node)
-    order = Vector{Node}()
-    stack = Vector{ Tuple{Bool, Node} }()
-    push!(stack, (false, root))
-
-    while ! isempty(stack)
-
-        (complete, node) = pop!(stack)
-
-        # all children have been visited:
-        if complete
-            push!(order, node)
-            node.state = permanently
-            continue
-        end
-
-        node.state = temporary
-
-        push!(stack, (true, node))
-
-        if typeof(node) <: InnerNode
-            for child in node.children
-                if child.state == unmarked
-                    push!(stack, (false, child))
-                elseif child.state == temporary
+                elseif states[child] == temporary
                     error("network contains cycle. Not a DAG.")
                 end
             end
@@ -149,7 +111,6 @@ function computeOrderStack(root::Node)
 
     return order
 end
-=#
 
 
 """
