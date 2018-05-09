@@ -42,18 +42,16 @@ function computeOrderRecursive(root::Node)
     Post-order traversal for inner nodes.
     """
     function postOrder(n::InnerNode, states::Dict{Node, State})
-        #n.state = temporary
         states[n] = temporary
 
         for child in n.children
-            if !haskey(states, child)  #child.state == unmarked
+            if !haskey(states, child)
                 postOrder(child, states)
-            elseif states[child] == temporary  #child.state == temporary
+            elseif states[child] == temporary
                 error("network contains cycle. Not a DAG.")
             end
         end
         states[n] = permanently
-        #n.state = permanently
         push!(order, n)
     end
 
@@ -63,15 +61,9 @@ function computeOrderRecursive(root::Node)
     function postOrder(l::LeafNode, states::Dict{Node, State})
         push!(order, l)
         states[l] = permanently
-        #l.state = permanently
     end
 
     postOrder(root, states)
-
-    # reset state of nodes:
-    #for node in order
-    #    node.state = unmarked
-    #end
 
     return order
 end
@@ -85,26 +77,30 @@ function computeOrderStack(root::Node)
     stack = Vector{Node}()
     push!(stack, root)
 
+    states = Dict{Node, State}()
+
     while ! isempty(stack)
 
         node = pop!(stack)
 
         # all children have been visited:
-        if node.state == temporary
+        if haskey(states, node) && states[node] == temporary  #node.state == temporary
             push!(order, node)
-            node.state = permanently
+            #node.state = permanently
+            states[node] = permanently
             continue
         end
 
-        node.state = temporary
+        #node.state = temporary
+        states[node] = temporary
 
         push!(stack, node)
 
         if typeof(node) <: InnerNode
             for child in node.children
-                if child.state == unmarked
+                if !haskey(states, child)  #child.state == unmarked
                     push!(stack, child)
-                elseif child.state == temporary
+                elseif states[child] == temporary  #child.state == temporary
                     error("network contains cycle. Not a DAG.")
                 end
             end
@@ -112,9 +108,9 @@ function computeOrderStack(root::Node)
     end
 
     # reset state of nodes:
-    for node in order
-        node.state = unmarked
-    end
+    #for node in order
+    #    node.state = unmarked
+    #end
 
     return order
 end
