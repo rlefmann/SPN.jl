@@ -15,7 +15,7 @@ data = readcsv("mnist-pca.csv")
 function trainspn(p::Int)
     x = data[1:n, 1:p*p]
     spn = structureLearnPoon(x,p,p,nsum=5,nleaf=10,baseres=1)
-    llhvals = parameterLearnEM1!(spn, x, iterations=30)
+    llhvals = parameterLearnEM!(spn, x, iterations=30)
     return llhvals./(p*p)  # llhvals normalized by number of random variables
 end
 
