@@ -62,10 +62,6 @@ mutable struct ProdNode <: InnerNode
     "The id number of this node."
     id::Int
 
-	"The log-likelihood value of this node."
-	logval::Float64
-    "The log-derivative value of this node."
-    logdrv::Float64
     "The node can have a state. Necessary for graph traversals."
     state::State
 
@@ -82,13 +78,14 @@ end
 Creates a new product node.
 """
 function ProdNode(id::Int=0)
-	logval = -Inf  # The default logval is log(0)=-Inf
-    logdrv = -Inf  # The default logdrv is log(0)=-Inf
+	#logval = -Inf  # The default logval is log(0)=-Inf
+    #logdrv = -Inf  # The default logdrv is log(0)=-Inf
     state = unmarked
 	parents = InnerNode[]
 	children = Node[]
 	scope = Int[]
-	ProdNode(id, logval, logdrv, state, parents, children, scope)
+	#ProdNode(id, logval, logdrv, state, parents, children, scope)
+    ProdNode(id, state, parents, children, scope)
 end
 
 
@@ -99,10 +96,6 @@ mutable struct SumNode <: InnerNode
     "The id number of this node."
     id::Int
 
-	"The log-likelihood value of this node."
-	logval::Float64
-    "The log-derivative value of this node."
-    logdrv::Float64
     "The index of the child with highest weighted value. Necessary for MPE inference."
     maxidx::Int
     "The node can have a state. Necessary for graph traversals."
@@ -126,8 +119,8 @@ end
 Creates a new sum node.
 """
 function SumNode(id::Int=0)
-	logval = -Inf  # The default logval is log(0)=-Inf
-    logdrv = -Inf  # The default logdrv is log(0)=-Inf
+	#logval = -Inf  # The default logval is log(0)=-Inf
+    #logdrv = -Inf  # The default logdrv is log(0)=-Inf
     maxidx = -1
     state = unmarked
 	parents = InnerNode[]
@@ -137,7 +130,8 @@ function SumNode(id::Int=0)
 	weights = Float64[]
     counts = Float64[]
 
-	SumNode(id, logval, logdrv, maxidx, state, parents, children, scope, weights, counts)
+	#SumNode(id, logval, logdrv, maxidx, state, parents, children, scope, weights, counts)
+    SumNode(id, maxidx, state, parents, children, scope, weights, counts)
 end
 
 
@@ -159,9 +153,9 @@ mutable struct IndicatorNode <: LeafNode
     id::Int
 
     "the log-likelihood value of this node."
-    logval::Float64
+    #logval::Float64
     "The log-derivative value of this node."
-    logdrv::Float64
+    #logdrv::Float64
     "The node can have a state. Necessary for graph traversals."
     state::State
 
@@ -181,12 +175,13 @@ Creates a new indicator node for a random variable with floating point values.
 """
 function IndicatorNode(varidx::Int, indicates::Float64, id::Int=0)
 	@assert varidx > 0
-    logval = -Inf
-    logdrv = -Inf
+    #logval = -Inf
+    #logdrv = -Inf
     state = unmarked
     parents = InnerNode[]
     scope = Int[varidx]
-    IndicatorNode(id, logval, logdrv, state, parents, scope, indicates)
+    #IndicatorNode(id, logval, logdrv, state, parents, scope, indicates)
+    IndicatorNode(id, state, parents, scope, indicates)
 end
 
 """
@@ -208,9 +203,9 @@ mutable struct GaussianNode <: LeafNode
     id::Int
 
     "the log-likelihood value of this node."
-    logval::Float64
+    #logval::Float64
     "The log-derivative value of this node."
-    logdrv::Float64
+    #logdrv::Float64
     "The node can have a state. Necessary for graph traversals."
     state::State
 
@@ -236,14 +231,15 @@ Creates a new Gaussian node.
 function GaussianNode(varidx::Int, μ::Float64, σ::Float64, id::Int=0)
     @assert varidx > 0
 
-    logval = -Inf
-    logdrv = -Inf
+    #logval = -Inf
+    #logdrv = -Inf
     state = unmarked
     parents = InnerNode[]
     scope = Int[varidx]
     distr = Normal(μ,σ)
 
-    GaussianNode(id,logval,logdrv,state,parents,scope,μ,σ,distr)
+    #GaussianNode(id,logval,logdrv,state,parents,scope,μ,σ,distr)
+    GaussianNode(id,state,parents,scope,μ,σ,distr)
 end
 
 
@@ -290,7 +286,7 @@ end
 Display an inner node.
 """
 function Base.show(io::IO, n::InnerNode)
-   print(io, "$(typeof(n))(parents=$(length(n.parents)), children=$(length(n.children)), logval=$(n.logval))") 
+   print(io, "$(typeof(n))(parents=$(length(n.parents)), children=$(length(n.children)))") 
 end
 
 
@@ -298,7 +294,7 @@ end
 Display an indicator node.
 """
 function Base.show(io::IO, i::IndicatorNode)
-   print(io, "$(typeof(i))(parents=$(length(i.parents)), scope=$(i.scope[1]), indicates=$(i.indicates), logval=$(i.logval))") 
+   print(io, "$(typeof(i))(parents=$(length(i.parents)), scope=$(i.scope[1]), indicates=$(i.indicates))") 
 end
 
 
@@ -306,7 +302,7 @@ end
 Display a Gaussian node.
 """
 function Base.show(io::IO, g::GaussianNode)
-   print(io, "$(typeof(g))(parents=$(length(g.parents)), scope=$(g.scope[1]), μ=$(g.μ), σ=$(g.σ), logval=$(g.logval))") 
+   print(io, "$(typeof(g))(parents=$(length(g.parents)), scope=$(g.scope[1]), μ=$(g.μ), σ=$(g.σ))") 
 end
 
 
