@@ -15,34 +15,6 @@
 ################################################################
 
 """
-    setInput!(spn::SumProductNetwork, x::AbstractVector, e::BitVector)
-
-Sets the logval of all leaf nodes of the SPN according to the input.
-"""
-function setInput!(spn::SumProductNetwork, x::AbstractVector, e::BitVector=trues(length(x)))
-    for node in spn.order
-        if typeof(node) <: LeafNode
-            setInput!(node, x, e)
-        end
-    end
-end
-
-
-"""
-    eval!(spn::SumProductNetwork) -> Float64
-
-Evaluates all nodes of an SPN on the current input. Returns the
-logval of the root node.
-"""
-function eval!(spn::SumProductNetwork; maxeval=false)
-    for node in spn.order
-        eval!(node, maxeval=maxeval)
-    end
-    return spn.root.logval
-end
-
-
-"""
     eval!(spn::SumProductNetwork, x::AbstractMatrix) -> Vector{Float64}
 
 Evaluate a `SumProductNetwork` for each of the datapoints in `x`.
@@ -78,66 +50,8 @@ end
 
 
 ################################################################
-# SET INPUT OF LEAF NODES (ONLY FOR SEQUENTIAL EVALUATION)
-################################################################
-
-"""
-    setInput!(i::IndicatorNode, x::AbstractVector, e::BitVector)
-
-Sets the logval of the indicator node `i` according to the input `x`.
-The bitvector `e` represents which values are in the evidence
-and which are unknown.
-
-Let X be the variable of the indicator and k the indicated value.
-The value is log(1)=0 if X==k or if the value of X is unknown. 
-Otherwise the value of the indicator is log(0)=-Inf.
-"""
-function setInput!(i::IndicatorNode, x::AbstractVector, e::BitVector=trues(length(x)))
-    idx = i.scope[1]  # get the column index of the variable i indicates
-    @assert length(x) >= idx
-    if e[idx] == false  # variable not in evidence
-        i.logval = 0.0
-    elseif x[idx] ≈ i.indicates
-        i.logval = 0.0
-    else
-        i.logval = -Inf
-    end
-end
-
-
-"""
-    setInput!(g::GaussianNode, x::AbstractVector, e::BitVector)
-
-Sets the logval of the Gaussian node `g` according to the input `x`.
-The bitvector `e` represents which values are in the evidence
-and which are unknown.
-"""
-function setInput!(g::GaussianNode, x::AbstractVector, e::BitVector=trues(length(x)))
-    idx = g.scope[1]  # get the column index of the variable g represents
-    @assert length(x) >= idx
-    if e[idx] == false  # variable not in evidence
-        g.logval = 0.0
-    else
-        g.logval = logpdf(g.distr, x[idx])  # evaluate Gaussian
-    end
-end    
-
-
-
-################################################################
 # EVALUATION OF LEAF NODES
 ################################################################
-
-"""
-    eval!(l::LeafNode; max::Bool=false; max::Bool=false) -> Float64
-
-Returns the log value of the leaf node `l` on the current input.
-The logval is already computed by `setInput!`.
-"""
-function eval!(l::LeafNode; maxeval::Bool=false)
-    return l.logval
-end
-
 
 function eval!(i::IndicatorNode, x::AbstractMatrix, llhvals::Matrix{Float64}; maxeval::Bool=false)
     varidx = i.scope[1]
@@ -181,21 +95,6 @@ end
 # EVALUATION OF PRODUCT NODES
 ################################################################
 
-"""
-    eval!(p::ProdNode; max::Bool=false) -> Float64
-
-Computes the log value of the product node `p` on the current input.
-
-The value of a product node is the product of the values of its children.
-Therefore, the log value is the sum of the log values of its children.
-"""
-function eval!(p::ProdNode; maxeval::Bool=false)
-    childvalues = [child.logval for child in p.children]
-    p.logval = sum(childvalues)
-    return p.logval
-end
-
-
 function eval!(p::ProdNode, x::AbstractMatrix, llhvals::Matrix{Float64}; maxeval::Bool=false)
     childids = [child.id for child in p.children]
     childvalues = llhvals[childids, :]
@@ -210,49 +109,10 @@ function eval_mpe!(p::ProdNode, x::AbstractMatrix, llhvals::Matrix{Float64}, max
 end
 
 
+
 ################################################################
 # EVALUATION OF SUM NODES
 ################################################################
-
-"""
-    eval!(s::SumNode; max::Bool=false) -> Float64
-
-Compute the log value of the sum node `s` on the current input.
-
-The value of a sum node is the sum of the values of its children.
-In log-space this looks a lot more ugly:
-log(S_i) = log(sum_j w_ij S_j) = log(sum_j exp(log(w_ij)) * exp(log(S_j)))
-= log(sum_j exp(log(w_ij) + log(S_j)).
-If the keyword argument `max` is set to true the value of the sum node is its maximum weighted child value.
-In log-space this means max(log(w_ij) + s_j).
-"""
-function eval!(s::SumNode; maxeval::Bool=false)
-    childvalues = [child.logval for child in s.children]
-    numChildren = length(childvalues)
-
-    sum_val = 0.0
-    max_val = -Inf  # the maximum weighted childvalue
-    max_idx = -1
-    for (w, cval, idx) in zip(s.weights, childvalues, 1:numChildren)
-        weighted_cval = cval + log(w)
-        sum_val += exp(weighted_cval)
-        if weighted_cval > max_val
-            max_val = weighted_cval
-            max_idx = idx
-        end
-    end
-
-    if maxeval == false
-        s.logval = log(sum_val)
-    else
-        #s.logval = max_val
-        s.logval = childvalues[max_idx]   # TODO: is this correct?
-    end
-    s.maxidx = max_idx
-
-    return s.logval
-end
-
 
 function eval!(s::SumNode, x::AbstractMatrix, llhvals::Matrix{Float64}; maxeval::Bool=false)
     childids = [child.id for child in s.children]
