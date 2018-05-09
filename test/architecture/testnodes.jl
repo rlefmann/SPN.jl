@@ -5,14 +5,12 @@ using Base.Test
 function test_inner_node_construction()
 	# Create a product node and check the values of its fields:
 	p = ProdNode()
-	@test p.logval == -Inf
 	@test p.parents == InnerNode[]
 	@test p.children == Node[]
 	@test p.scope == Int[]
 
 	# Create a sum node and check the values of its fields:
 	s = SumNode()
-	@test s.logval == -Inf
 	@test s.parents == InnerNode[]
 	@test s.children == Node[]
 	@test s.scope == Int[]
@@ -23,7 +21,6 @@ end
 function test_indicator_node_construction()
 	# Create an indicator node and check the values of its fields:
 	i = IndicatorNode(1,3.0)
-	@test i.logval == -Inf
 	@test i.parents == InnerNode[]
 	@test length(i.scope) == 1
 	@test i.scope == [1]
@@ -64,6 +61,7 @@ function test_connect_nodes()
 end
 
 
+#=
 """
 Test matrix evaluation of SPN.
 """
@@ -126,6 +124,7 @@ function test_eval1()
 	@test llhvals[p3.id, 1] ≈ log(p3_val)
 	@test llhvals[s.id, 1] ≈ log(s_val)
 end
+=#
 
 
 function test_normalize()
@@ -146,6 +145,6 @@ end
 test_inner_node_construction()
 test_indicator_node_construction()
 test_connect_nodes()
-test_eval1()
+#test_eval1()
 # test_eval_max()  # TODO: this needs some work!
 test_normalize()

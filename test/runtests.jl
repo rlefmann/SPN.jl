@@ -8,7 +8,7 @@ tests = ["architecture/testnodes",
          "architecture/testnetwork",
          "inference/testeval",
          "inference/testderivative",
-         "inference/testinference",
+         #"inference/testinference",
          "learn/testpoon",
          "testutils"]
 

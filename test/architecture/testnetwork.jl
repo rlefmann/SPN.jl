@@ -53,6 +53,7 @@ function test_compute_order_recursive_cycles()
     @test_throws ErrorException SumProductNetwork(s1, recursive=false)
 end
 
+
 function test_computeDerivatives()
     s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
     spn = SumProductNetwork(s, recursive=false)
@@ -114,8 +115,5 @@ end
 test_compute_order_recursive()
 test_compute_order_stack()
 test_compute_order_recursive_cycles()
-#test_eval()
-test_eval1()
-#test_computeDerivatives()
 test_normalize()
 test_number_of_nodes()
