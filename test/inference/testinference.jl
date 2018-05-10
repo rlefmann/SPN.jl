@@ -44,5 +44,5 @@ function test_conditional_inference()
 end
 
 test_marginal_inference_complete_evidence()
-test_marginal_inference_incomplete_evidence()
-test_conditional_inference()
+#test_marginal_inference_incomplete_evidence()
+#test_conditional_inference()
