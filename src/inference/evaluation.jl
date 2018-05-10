@@ -49,11 +49,47 @@ function eval!(spn::SumProductNetwork, x::AbstractMatrix, llhvals::Matrix{Float6
     n,d = size(x)
     m = numNodes(spn)
     @assert size(llhvals) == (m,n)
-    # TODO: max evaluation
     for node in spn.order
         eval!(node, x, llhvals, maxeval=maxeval)
     end
     return vec(llhvals[spn.root.id,:])
+end
+
+
+"""
+    eval_mpe!(spn::SumProductNetwork, x::AbstractMatrix) -> Matrix{Int}
+
+MPE evaluation of a `SumProductNetwork`. Return a matrix where each entry `(i,j)`
+is the ID of the child of sum node `i` with maximum weighted value on input
+data point `j`.
+"""
+function eval_mpe!(spn::SumProductNetwork, x::AbstractMatrix; maxeval::Bool=false)
+    n,d = size(x)
+    m = numNodes(spn)
+    llhvals = Matrix{Float64}(m,n)
+    maxchids = zeros(Int, m, n)
+    return eval_mpe!(spn, x, llhvals, maxchids, maxeval=maxeval)
+end
+
+
+function eval_mpe!(spn::SumProductNetwork, x::AbstractMatrix, llhvals::Matrix{Float64}, maxchids::Matrix{Int}; maxeval::Bool=false)
+    n,d = size(x)
+    m = numNodes(spn)
+    @assert size(llhvals) == size(maxchids) == (m,n)
+    for node in spn.order
+        eval_mpe!(node, x, llhvals, maxchids, maxeval=maxeval)
+    end
+    return maxchids
+end
+
+
+"""
+    eval_mpe!(spn::SumProductNetwork, x::AbstractVector) -> Vector{Int}
+
+MPE evaluation of a `SumProductNetwork` for the single datapoint `x`.
+"""
+function eval_mpe!(spn::SumProductNetwork, x::AbstractVector; maxeval::Bool=false)
+    return vec(eval_mpe!(spn, x', maxeval=maxeval))
 end
 
 

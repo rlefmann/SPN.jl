@@ -115,6 +115,36 @@ function eval_network(; maxeval=false)
 end
 
 
+function eval_network_mpe(; maxeval=false)
+    s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
+    spn = SumProductNetwork(s, recursive=false)
+
+    # change order and IDs such that they correspond to the IDs
+    # assumed by compute_maxchildids_for_datapoint:
+    spn.order = reverse([s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4])
+    for i in 1:length(spn.order)
+        spn.order[i].id = 13-i
+    end
+
+    x = [ true false; false false; false true; true true]
+    maxchids = eval_mpe!(spn, x, maxeval=maxeval)
+
+    dp1_values = compute_maxchildids_for_datapoint(1.0, 0.0, 0.0, 1.0, maxeval=maxeval)
+    dp2_values = compute_maxchildids_for_datapoint(0.0, 1.0, 0.0, 1.0, maxeval=maxeval)
+    dp3_values = compute_maxchildids_for_datapoint(0.0, 1.0, 1.0, 0.0, maxeval=maxeval)
+    dp4_values = compute_maxchildids_for_datapoint(1.0, 0.0, 1.0, 0.0, maxeval=maxeval)
+
+    @test maxchids[:,1] == dp1_values
+    @test maxchids[:,2] == dp2_values
+    @test maxchids[:,3] == dp3_values
+    @test maxchids[:,4] == dp4_values
+
+    # vector evaluation:
+    x1 = x[1,:]
+    res::Vector{Int} = eval_mpe!(spn, x1, maxeval=maxeval)
+    @test res ≈ dp1_values
+end
+
 
 ################################################################
 # MATRIX EVALUATION OF NODES
@@ -210,6 +240,8 @@ end
 
 eval_network(maxeval=true)
 eval_network(maxeval=false)
+eval_network_mpe(maxeval=true)
+eval_network_mpe(maxeval=false)
 eval_nodes(maxeval=true)
 eval_nodes(maxeval=false)
 eval_nodes_mpe(maxeval=true)
