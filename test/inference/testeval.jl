@@ -47,7 +47,7 @@ Compute the IDs of the winning child for each sum node
 in the toy SPN when performing MPE evaluation.
 """
 function compute_maxchildids_for_datapoint(i1_val, i2_val, i3_val, i4_val; maxeval::Bool=false)
-    
+
     values = compute_values_for_datapoint(i1_val, i2_val, i3_val, i4_val, maxeval=maxeval)
 
     s_val = values[1]
@@ -97,7 +97,7 @@ function eval_network(; maxeval=false)
 
     x = [ true false; false false; false true; true true]
     llhvals = eval!(spn, x, maxeval=maxeval)
-    
+
     dp1_values = compute_values_for_datapoint(1.0, 0.0, 0.0, 1.0, maxeval=maxeval)
     dp2_values = compute_values_for_datapoint(0.0, 1.0, 0.0, 1.0, maxeval=maxeval)
     dp3_values = compute_values_for_datapoint(0.0, 1.0, 1.0, 0.0, maxeval=maxeval)
@@ -107,6 +107,11 @@ function eval_network(; maxeval=false)
     @test llhvals[2] ≈ log(dp2_values[1])
     @test llhvals[3] ≈ log(dp3_values[1])
     @test llhvals[4] ≈ log(dp4_values[1])
+
+    # vector evaluation:
+    x1 = x[1,:]
+    res::Float64 = eval!(spn, x1, maxeval=maxeval)
+    @test res ≈ log(dp1_values[1])
 end
 
 
@@ -126,10 +131,10 @@ function eval_nodes(; maxeval=false)
 
 	# Note: the first datapoint is the same as in eval_nodes
 	x = float([ true false; false false; false true; true true])
-	
+
 	n,d = size(x)
     m = length(node_vector)
-    
+
     llhvals = Matrix{Float64}(m,n)
 
     for node in reverse(node_vector)
@@ -159,10 +164,10 @@ function eval_nodes_mpe(;maxeval::Bool=true)
     end
 
     x = float([ true false; false false; false true; true true])
-    
+
     n,d = size(x)
     m = length(node_vector)
-    
+
     llhvals = Matrix{Float64}(m, n)
     maxchids = zeros(Int, m, n)
 

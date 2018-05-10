@@ -24,8 +24,17 @@ function eval!(spn::SumProductNetwork, x::AbstractMatrix; maxeval::Bool=false)
     n,d = size(x)
     m = numNodes(spn)
     llhvals = Matrix{Float64}(m,n)
-    # TODO: max evaluation
     return eval!(spn, x, llhvals, maxeval=maxeval)
+end
+
+
+"""
+    eval!(spn::SumProductNetwork, x::AbstractVector) -> Float64
+
+Evaluate a `SumProductNetwork` for the single datapoint `x`.
+"""
+function eval!(spn::SumProductNetwork, x::AbstractVector; maxeval::Bool=false)
+    return eval!(spn, x', maxeval=maxeval)[]  # the empty square braces turn a single element vector into a scalar
 end
 
 
@@ -136,9 +145,9 @@ function eval_mpe!(s::SumNode, x::AbstractMatrix, llhvals::Matrix{Float64}, maxc
     else
         llhvals[s.id,:] = maxvals
     end
-    #= 
+    #=
     maxidxs is a flattened index for the weighted_cvals array.
-    We have to find the row of the maximal entry of each column from these indices. 
+    We have to find the row of the maximal entry of each column from these indices.
     We can use ind2sub, but this results in ugly code, so we do the conversion
     using modulo calculation.
     =#
