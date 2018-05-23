@@ -12,9 +12,7 @@ Marginal inference with incomplete evidence. Queries of type P(E=e),
 where E ⊆ X.
 """
 function marginalInference!(spn::SumProductNetwork, x::AbstractVecOrMat, e::BitArray)
-	@assert size(x) == size(e)
-	xfloat = float(x)
-	xfloat[.!e] = NaN
+	xfloat = convert_to_float(x, e)
 	return eval!(spn, xfloat)
 end
 

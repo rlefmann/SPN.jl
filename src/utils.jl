@@ -87,3 +87,17 @@ function create_toy_spn()
 
     return s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4
 end
+
+
+"""
+    convert_to_float(x::AbstractVecOrMat, e::BitArray)
+
+Convert a vector or a matrix to type `Float64`. Entries of `x` for which the
+corresponding entry in `e` is false are set to `NaN`.
+"""
+function convert_to_float(x::AbstractVecOrMat, e::BitArray=trues(x))
+    @assert size(x) == size(e)
+    xfloat = float(x)
+	xfloat[.!e] = NaN
+    return xfloat
+end
