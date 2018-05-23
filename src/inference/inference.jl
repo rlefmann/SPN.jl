@@ -24,8 +24,8 @@ We have P(q|e) = P(q,e)/P(e), so it can be computed with two upward passes.
 Because we compute probabilities in logspace, we have
 log(P(q|e)) = log(P(q,e)/P(e)) = log(P(q,e)) - log(P(e)).
 """
-function conditionalInference!(spn::SumProductNetwork, x::AbstractVector, q::BitVector, e::BitVector)
-	if !(length(x) == length(q) == length(e))
+function conditionalInference!(spn::SumProductNetwork, x::AbstractVecOrMat, q::BitVector, e::BitVector)
+	if !(size(x)[end] == length(q) == length(e))
 		throw(ArgumentError("the input x, the query bitvector, and the evidence bitvector must have the same length"))
 	elseif sum(q .& e) > 0
 		throw(ArgumentError("a query variable is also part of the evidence"))
@@ -33,7 +33,7 @@ function conditionalInference!(spn::SumProductNetwork, x::AbstractVector, q::Bit
 	qe = q .| e
 	log_joint_prob = marginalInference!(spn, x, qe)
 	log_evidence_prob = marginalInference!(spn, x, e)
-	return log_joint_prob - log_evidence_prob
+	return log_joint_prob .- log_evidence_prob
 end
 
 

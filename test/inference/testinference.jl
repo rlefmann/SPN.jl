@@ -41,8 +41,12 @@ function test_conditional_inference()
     # P(X_1=t) = 0.6*0.5 + 0.6*0.2 + 0.9*0.3 (see above)
     expected = log(0.522 / (0.6*0.5 + 0.6*0.2 + 0.9*0.3))
     @test conditionalInference!(spn, x, q, e) ≈ expected
+
+
+    x = [ true false; false false; false true; true true]
+    @test conditionalInference!(spn, x, q, e)[1] ≈ expected
 end
 
 test_marginal_inference_complete_evidence()
-#test_marginal_inference_incomplete_evidence()
-#test_conditional_inference()
+test_marginal_inference_incomplete_evidence()
+test_conditional_inference()

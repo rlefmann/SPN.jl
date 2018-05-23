@@ -101,3 +101,17 @@ function convert_to_float(x::AbstractVecOrMat, e::BitArray=trues(x))
 	xfloat[.!e] = NaN
     return xfloat
 end
+
+
+"""
+convert_to_float(x::AbstractMatrix, e::BitVector)
+
+Convert a vector or a matrix to type `Float64`. All entries in columns of `x`
+for which the corresponding entry in `e` is false are set to `NaN`.
+"""
+function convert_to_float(x::AbstractMatrix, e::BitVector)
+    @assert length(e) == size(x, 2)
+    xfloat = float(x)
+    xfloat[:,.!e] = NaN
+    return xfloat
+end
