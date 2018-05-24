@@ -47,6 +47,30 @@ function test_conditional_inference()
     @test conditionalInference!(spn, x, q, e)[1] ≈ expected
 end
 
+
+function test_mpe_inference()
+    s, p1, p2, p3, s1, s2, s3, s4, i1, i2, i3, i4 = create_toy_spn()
+    spn = SumProductNetwork(s, recursive=false)
+
+    x = [ true false; false false; false true; true true]
+    x = float(x)
+    x[:, 2] = NaN  # variable x2 is unknown
+    expected = [1.0 0.0; 0.0 0.0; 0.0 0.0; 1.0 0.0]
+
+    mpeInference!(spn, x)
+    @test x ≈ expected
+
+    x = [ true false; false false; false true; true true]
+    x = float(x)
+    x[:, 1] = NaN  # variable x1 is unknown
+    expected = [1.0 0.0; 1.0 0.0; 1.0 1.0; 1.0 1.0]
+
+    mpeInference!(spn, x)
+    @test x ≈ expected
+end
+
+
 test_marginal_inference_complete_evidence()
 test_marginal_inference_incomplete_evidence()
 test_conditional_inference()
+test_mpe_inference()
