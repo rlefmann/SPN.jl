@@ -67,20 +67,20 @@ function mpeInference!(spn::SumProductNetwork, x::Matrix{Float64}; maxeval=true)
 			if isa(node, SumNode)
 				maxchild = maxchids[node.id, i]
 				push!(stack, maxchild)
-				println("$maxchild added to stack")
+				#println("$maxchild added to stack")
 			elseif isa(node, ProdNode)
 				for child in node.children
 					push!(stack, child.id)
-					println("$(child.id) added to stack")
+					#println("$(child.id) added to stack")
 				end
 			elseif isa(node, IndicatorNode)
 				varidx = node.scope[1]
 				x[i, varidx] = node.indicates
-				println("set x[$i, $varidx] to $(node.indicates)")
+				#println("set x[$i, $varidx] to $(node.indicates)")
 			elseif isa(node, GaussianNode)
 				varidx = node.scope[1]
 				x[i, varidx] = node.μ
-				println("set x[$i, $varidx] to $(node.μ)")
+				#println("set x[$i, $varidx] to $(node.μ)")
 			end
 		end
 	end
