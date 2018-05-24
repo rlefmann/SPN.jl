@@ -3,13 +3,19 @@ mutable struct SumProductNetwork
     root::Node
     "The order in which the nodes of the SPN are evaluated."
     order::Vector{Node}
+    "A dictionary to quickly find a node based on its id."
+    id2node::Dict{Int, Node}
 
     """
     Creates a new SPN from an existing graph of nodes.
     """
     function SumProductNetwork(root::Node; recursive=true)
         order = computeOrder(root, recursive=recursive)
-        new(root, order)
+        id2node = Dict{Int, Node}()
+        for node in order
+            id2node[node.id] = node
+        end
+        new(root, order, id2node)
     end
 end
 
@@ -128,7 +134,7 @@ end
 """
    numNodes(spn::SumProductNetwork) -> Int
 
-The total number of nodes in the SPN. 
+The total number of nodes in the SPN.
 """
 function numNodes(spn::SumProductNetwork)
     return length(spn.order)
@@ -168,7 +174,7 @@ end
 """
     numNodes(spn::SumProductNetwork, t::Type) -> Int
 
-The number of nodes in the SPN that are of type `t`. 
+The number of nodes in the SPN that are of type `t`.
 The type `t` can be concrete or abstract. In the latter case the number
 of nodes that are of a subtype of `t` are counted.
 """
